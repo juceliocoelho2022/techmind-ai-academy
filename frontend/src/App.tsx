@@ -8,6 +8,10 @@ import {
   Cloud,
   Code2,
   Database,
+  Download,
+  FileArchive,
+  FileText,
+  Image as ImageIcon,
   LockKeyhole,
   LogOut,
   PlayCircle,
@@ -58,6 +62,17 @@ type Enrollment = {
   percentage: number
 }
 
+type LessonResource = {
+  id: number
+  type: 'PROJECT_ZIP' | 'IMAGE' | 'EBOOK'
+  title: string
+  description: string | null
+  fileName: string
+  contentType: string
+  sizeBytes: number
+  position: number
+}
+
 type Lesson = {
   id: number
   slug: string
@@ -65,6 +80,7 @@ type Lesson = {
   summary: string
   position: number
   xpReward: number
+  resources: LessonResource[]
 }
 
 type LearningModule = {
@@ -357,6 +373,114 @@ export default function App() {
     } finally {
       setCurriculumBusy(false)
     }
+  }
+
+  async function downloadResource(resource: LessonResource) {
+    if (!token) {
+      setMessage('Entre na sua conta para baixar os materiais da aula.')
+      return
+    }
+
+    if (!selectedEnrollment) {
+      setMessage('Matricule-se nesta trilha para baixar os materiais.')
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `/api/v1/learning/resources/${resource.id}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      if (!response.ok) {
+        const raw = await response.text()
+        throw new Error(`HTTP ${response.status} — ${raw || response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = resource.fileName
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      URL.revokeObjectURL(url)
+
+      setMessage(`Download iniciado: ${resource.fileName}`)
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível baixar o material.'
+      )
+    }
+  }
+
+  async function uploadResource(
+    event: FormEvent<HTMLFormElement>,
+    lessonId: number
+  ) {
+    event.preventDefault()
+
+    if (!token || user?.role !== 'ADMIN') {
+      setMessage('Somente administradores podem anexar materiais.')
+      return
+    }
+
+    const form = event.currentTarget
+    const data = new FormData(form)
+
+    try {
+      const response = await fetch(
+        `/api/v1/admin/lessons/${lessonId}/resources`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: data
+        }
+      )
+
+      if (!response.ok) {
+        const raw = await response.text()
+        throw new Error(`HTTP ${response.status} — ${raw || response.statusText}`)
+      }
+
+      form.reset()
+
+      if (selectedCourseId) {
+        const updated = await api<CourseCurriculum>(
+          `/api/v1/courses/${selectedCourseId}/curriculum`
+        )
+        setCurriculum(updated)
+      }
+
+      setMessage('Material anexado à aula com sucesso.')
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível anexar o material.'
+      )
+    }
+  }
+
+  function resourceLabel(type: LessonResource['type']) {
+    if (type === 'PROJECT_ZIP') return 'Projeto ZIP'
+    if (type === 'IMAGE') return 'Imagem'
+    return 'E-book'
+  }
+
+  function formatBytes(bytes: number) {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
   async function completeLesson(lessonId: number) {
@@ -753,6 +877,73 @@ export default function App() {
                                   <span>+{lesson.xpReward} XP</span>
                                 </div>
                                 <p>{lesson.summary}</p>
+
+                                {lesson.resources.length > 0 && (
+                                  <div className="lesson-resources">
+                                    {lesson.resources.map(resource => {
+                                      const ResourceIcon =
+                                        resource.type === 'PROJECT_ZIP'
+                                          ? FileArchive
+                                          : resource.type === 'IMAGE'
+                                            ? ImageIcon
+                                            : FileText
+
+                                      return (
+                                        <button
+                                          className="resource-chip"
+                                          key={resource.id}
+                                          onClick={() => downloadResource(resource)}
+                                          disabled={!user || !selectedEnrollment}
+                                          title={
+                                            selectedEnrollment
+                                              ? `Baixar ${resource.fileName}`
+                                              : 'Matricule-se para baixar'
+                                          }
+                                        >
+                                          <ResourceIcon size={15} />
+                                          <span>
+                                            <strong>{resource.title}</strong>
+                                            <small>
+                                              {resourceLabel(resource.type)} · {formatBytes(resource.sizeBytes)}
+                                            </small>
+                                          </span>
+                                          <Download size={15} />
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                )}
+
+                                {user?.role === 'ADMIN' && (
+                                  <details className="resource-admin">
+                                    <summary>Adicionar material à aula</summary>
+                                    <form onSubmit={event => uploadResource(event, lesson.id)}>
+                                      <select name="type" defaultValue="PROJECT_ZIP" required>
+                                        <option value="PROJECT_ZIP">Projeto .zip</option>
+                                        <option value="IMAGE">Imagem</option>
+                                        <option value="EBOOK">E-book PDF/EPUB</option>
+                                      </select>
+                                      <input
+                                        name="title"
+                                        placeholder="Título do material"
+                                        maxLength={200}
+                                        required
+                                      />
+                                      <input
+                                        name="description"
+                                        placeholder="Descrição opcional"
+                                        maxLength={500}
+                                      />
+                                      <input
+                                        name="file"
+                                        type="file"
+                                        accept=".zip,.png,.jpg,.jpeg,.webp,.pdf,.epub"
+                                        required
+                                      />
+                                      <button type="submit">Anexar material</button>
+                                    </form>
+                                  </details>
+                                )}
                               </div>
 
                               <button
