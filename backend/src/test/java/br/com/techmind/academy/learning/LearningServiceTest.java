@@ -140,7 +140,7 @@ class LearningServiceTest {
 
         when(userRepository.findByEmail("aluno@techmind.dev")).thenReturn(Optional.of(user));
         when(lessonRepository.findById(100L)).thenReturn(Optional.of(lesson));
-        when(enrollmentRepository.findByUserEmailAndCourseId("aluno@techmind.dev", 1L))
+        when(enrollmentRepository.findForUpdateByUserEmailAndCourseId("aluno@techmind.dev", 1L))
                 .thenReturn(Optional.of(enrollment));
         when(progressRepository.findByUserIdAndLessonId(7L, 100L)).thenReturn(Optional.empty());
         when(progressRepository.save(any(LessonProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -224,7 +224,7 @@ class LearningServiceTest {
 
         when(userRepository.findByEmail("aluno@techmind.dev")).thenReturn(Optional.of(user));
         when(lessonRepository.findById(100L)).thenReturn(Optional.of(lesson));
-        when(enrollmentRepository.findByUserEmailAndCourseId("aluno@techmind.dev", 1L))
+        when(enrollmentRepository.findForUpdateByUserEmailAndCourseId("aluno@techmind.dev", 1L))
                 .thenReturn(Optional.of(enrollment));
         when(progressRepository.findByUserIdAndLessonId(7L, 100L))
                 .thenReturn(Optional.of(existingProgress));
