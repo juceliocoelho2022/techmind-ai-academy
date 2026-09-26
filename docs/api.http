@@ -4,6 +4,9 @@ GET http://localhost:8080/actuator/health
 ### Trilhas públicas
 GET http://localhost:8080/api/v1/courses
 
+### Currículo de uma trilha
+GET http://localhost:8080/api/v1/courses/1/curriculum
+
 ### Cadastro
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
@@ -37,15 +40,14 @@ Authorization: Bearer {{token}}
 GET http://localhost:8080/api/v1/enrollments/me
 Authorization: Bearer {{token}}
 
-### Atualizar progresso
-PATCH http://localhost:8080/api/v1/enrollments/courses/1/progress
+### Meu progresso detalhado na trilha
+GET http://localhost:8080/api/v1/learning/courses/1/progress
 Authorization: Bearer {{token}}
-Content-Type: application/json
 
-{
-  "completedLessons": 3,
-  "xp": 450
-}
+### Concluir aula
+# Troque {lessonId} por um ID retornado pelo endpoint de currículo.
+POST http://localhost:8080/api/v1/learning/lessons/1/complete
+Authorization: Bearer {{token}}
 
 ### Progresso agregado
 GET http://localhost:8080/api/v1/progress/me
