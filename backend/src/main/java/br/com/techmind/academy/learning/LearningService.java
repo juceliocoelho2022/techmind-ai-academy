@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class LearningService {
@@ -20,19 +22,22 @@ public class LearningService {
     private final EnrollmentRepository enrollmentRepository;
     private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
+    private final LessonResourceRepository lessonResourceRepository;
 
     public LearningService(
             CourseRepository courseRepository,
             UserRepository userRepository,
             EnrollmentRepository enrollmentRepository,
             LessonRepository lessonRepository,
-            LessonProgressRepository lessonProgressRepository
+            LessonProgressRepository lessonProgressRepository,
+            LessonResourceRepository lessonResourceRepository
     ) {
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.lessonRepository = lessonRepository;
         this.lessonProgressRepository = lessonProgressRepository;
+        this.lessonResourceRepository = lessonResourceRepository;
     }
 
     @Transactional(readOnly = true)
@@ -41,6 +46,10 @@ public class LearningService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trilha não encontrada"));
 
         var lessons = lessonRepository.findCurriculumByCourseId(courseId);
+        Map<Long, List<LessonResource>> resourcesByLesson = lessonResourceRepository.findByCourseId(courseId)
+                .stream()
+                .collect(Collectors.groupingBy(resource -> resource.getLesson().getId()));
+
         var grouped = new LinkedHashMap<Long, List<Lesson>>();
 
         for (var lesson : lessons) {
@@ -56,7 +65,12 @@ public class LearningService {
                             module.getTitle(),
                             module.getDescription(),
                             module.getPosition(),
-                            group.stream().map(LessonResponse::from).toList()
+                            group.stream()
+                                    .map(lesson -> LessonResponse.from(
+                                            lesson,
+                                            resourcesByLesson.getOrDefault(lesson.getId(), List.of())
+                                    ))
+                                    .toList()
                     );
                 })
                 .toList();
