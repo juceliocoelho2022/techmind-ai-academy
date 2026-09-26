@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import AdminStudio from './AdminStudio'
 import {
   ArrowLeft,
   BookOpen,
@@ -64,7 +65,7 @@ type Enrollment = {
 
 type LessonResource = {
   id: number
-  type: 'PROJECT_ZIP' | 'IMAGE' | 'EBOOK'
+  type: 'VIDEO' | 'PROJECT_ZIP' | 'IMAGE' | 'EBOOK'
   title: string
   description: string | null
   fileName: string
@@ -167,6 +168,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register')
   const [authBusy, setAuthBusy] = useState(false)
   const [message, setMessage] = useState('')
+  const [adminMode, setAdminMode] = useState(false)
 
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
   const [curriculum, setCurriculum] = useState<CourseCurriculum | null>(null)
@@ -472,6 +474,7 @@ export default function App() {
   }
 
   function resourceLabel(type: LessonResource['type']) {
+    if (type === 'VIDEO') return 'Vídeo'
     if (type === 'PROJECT_ZIP') return 'Projeto ZIP'
     if (type === 'IMAGE') return 'Imagem'
     return 'E-book'
@@ -546,6 +549,17 @@ export default function App() {
     setMessage('Sessão encerrada.')
   }
 
+  if (adminMode && user?.role === 'ADMIN' && token) {
+    return (
+      <AdminStudio
+        token={token}
+        userName={user.name}
+        courses={courses}
+        onExit={() => setAdminMode(false)}
+      />
+    )
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -558,6 +572,11 @@ export default function App() {
         </div>
 
         <div className="top-actions">
+          {user?.role === 'ADMIN' && (
+            <button className="admin-toggle" onClick={() => setAdminMode(true)}>
+              <ShieldCheck size={17} /> Admin Studio
+            </button>
+          )}
           {user && <span className="user-chip">{user.name}</span>}
           <div className="xp">
             <Trophy size={18} /> {progress?.xp ?? 0} XP
@@ -882,11 +901,13 @@ export default function App() {
                                   <div className="lesson-resources">
                                     {lesson.resources.map(resource => {
                                       const ResourceIcon =
-                                        resource.type === 'PROJECT_ZIP'
-                                          ? FileArchive
-                                          : resource.type === 'IMAGE'
-                                            ? ImageIcon
-                                            : FileText
+                                        resource.type === 'VIDEO'
+                                          ? PlayCircle
+                                          : resource.type === 'PROJECT_ZIP'
+                                            ? FileArchive
+                                            : resource.type === 'IMAGE'
+                                              ? ImageIcon
+                                              : FileText
 
                                       return (
                                         <button
@@ -919,6 +940,7 @@ export default function App() {
                                     <summary>Adicionar material à aula</summary>
                                     <form onSubmit={event => uploadResource(event, lesson.id)}>
                                       <select name="type" defaultValue="PROJECT_ZIP" required>
+                                        <option value="VIDEO">Vídeo</option>
                                         <option value="PROJECT_ZIP">Projeto .zip</option>
                                         <option value="IMAGE">Imagem</option>
                                         <option value="EBOOK">E-book PDF/EPUB</option>
@@ -937,7 +959,7 @@ export default function App() {
                                       <input
                                         name="file"
                                         type="file"
-                                        accept=".zip,.png,.jpg,.jpeg,.webp,.pdf,.epub"
+                                        accept=".mp4,.mov,.avi,.webm,.zip,.png,.jpg,.jpeg,.webp,.pdf,.epub"
                                         required
                                       />
                                       <button type="submit">Anexar material</button>
