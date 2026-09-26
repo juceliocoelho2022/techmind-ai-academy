@@ -23,6 +23,7 @@ import {
   Video
 } from 'lucide-react'
 import './admin-studio.css'
+import AdminStructureManager from './AdminStructureManager'
 
 type Course = {
   id: number
@@ -76,6 +77,7 @@ type Props = {
   token: string
   userName: string
   courses: Course[]
+  onCoursesChanged: (courses: Course[]) => void
   onExit: () => void
 }
 
@@ -158,7 +160,13 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export default function AdminStudio({ token, userName, courses, onExit }: Props) {
+export default function AdminStudio({
+  token,
+  userName,
+  courses,
+  onCoursesChanged,
+  onExit
+}: Props) {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(
     courses[0]?.id ?? null
   )
@@ -221,6 +229,11 @@ export default function AdminStudio({ token, userName, courses, onExit }: Props)
       void loadCurriculum(selectedCourseId)
     }
   }, [selectedCourseId])
+
+  const selectedCourse = useMemo(
+    () => courses.find(course => course.id === selectedCourseId) ?? null,
+    [courses, selectedCourseId]
+  )
 
   const selectedModule = useMemo(
     () =>
@@ -292,6 +305,32 @@ export default function AdminStudio({ token, userName, courses, onExit }: Props)
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
   }, [selectedLessonId, selectedLesson?.resources, token])
+
+  async function refreshStructure() {
+    const updatedCourses = await request<Course[]>('/api/v1/courses', token)
+    onCoursesChanged(updatedCourses)
+
+    if (updatedCourses.length === 0) {
+      setSelectedCourseId(null)
+      setSelectedModuleId(null)
+      setSelectedLessonId(null)
+      setCurriculum(null)
+      return
+    }
+
+    const nextCourseId =
+      selectedCourseId &&
+      updatedCourses.some(course => course.id === selectedCourseId)
+        ? selectedCourseId
+        : updatedCourses[0].id
+
+    if (nextCourseId !== selectedCourseId) {
+      setSelectedCourseId(nextCourseId)
+      return
+    }
+
+    await loadCurriculum(nextCourseId, false)
+  }
 
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -489,6 +528,15 @@ export default function AdminStudio({ token, userName, courses, onExit }: Props)
         </section>
 
         {message && <div className="admin-notice">{message}</div>}
+
+        <AdminStructureManager
+          token={token}
+          selectedCourse={selectedCourse}
+          selectedModule={selectedModule}
+          selectedLesson={selectedLesson}
+          onChanged={refreshStructure}
+          onMessage={setMessage}
+        />
 
         <div className="admin-workspace">
           <div className="admin-left-column">
