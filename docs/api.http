@@ -1,0 +1,52 @@
+### Health
+GET http://localhost:8080/actuator/health
+
+### Trilhas públicas
+GET http://localhost:8080/api/v1/courses
+
+### Cadastro
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "name": "Aluno TechMind",
+  "email": "aluno@techmind.dev",
+  "password": "senha123"
+}
+
+### Login
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "aluno@techmind.dev",
+  "password": "senha123"
+}
+
+> {% client.global.set("token", response.body.accessToken); %}
+
+### Perfil autenticado
+GET http://localhost:8080/api/v1/users/me
+Authorization: Bearer {{token}}
+
+### Matricular na trilha 1
+POST http://localhost:8080/api/v1/enrollments/courses/1
+Authorization: Bearer {{token}}
+
+### Minhas matrículas
+GET http://localhost:8080/api/v1/enrollments/me
+Authorization: Bearer {{token}}
+
+### Atualizar progresso
+PATCH http://localhost:8080/api/v1/enrollments/courses/1/progress
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "completedLessons": 3,
+  "xp": 450
+}
+
+### Progresso agregado
+GET http://localhost:8080/api/v1/progress/me
+Authorization: Bearer {{token}}
