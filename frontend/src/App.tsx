@@ -555,6 +555,7 @@ export default function App() {
         token={token}
         userName={user.name}
         courses={courses}
+        onCoursesChanged={setCourses}
         onExit={() => setAdminMode(false)}
       />
     )
