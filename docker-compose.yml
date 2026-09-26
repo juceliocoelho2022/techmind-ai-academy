@@ -26,7 +26,7 @@ services:
       JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-120}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
       LEARNING_RESOURCES_ROOT: /app/storage/learning-resources
-      LEARNING_RESOURCES_MAX_BYTES: ${LEARNING_RESOURCES_MAX_BYTES:-104857600}
+      LEARNING_RESOURCES_MAX_BYTES: ${LEARNING_RESOURCES_MAX_BYTES:-524288000}
     volumes:
       - techmind_learning_resources:/app/storage/learning-resources
     ports:
