@@ -1,6 +1,5 @@
 package br.com.techmind.academy.enrollment;
 
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -23,14 +22,10 @@ public class EnrollmentController {
 
     @PostMapping("/courses/{courseId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public EnrollmentResponse enroll(Authentication authentication, @PathVariable Long courseId) {
+    public EnrollmentResponse enroll(
+            Authentication authentication,
+            @PathVariable Long courseId
+    ) {
         return enrollmentService.enroll(authentication.getName(), courseId);
-    }
-
-    @PatchMapping("/courses/{courseId}/progress")
-    public EnrollmentResponse updateProgress(Authentication authentication,
-                                             @PathVariable Long courseId,
-                                             @Valid @RequestBody UpdateProgressRequest request) {
-        return enrollmentService.updateProgress(authentication.getName(), courseId, request);
     }
 }

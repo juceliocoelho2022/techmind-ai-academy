@@ -15,7 +15,11 @@ public class EnrollmentService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
-    public EnrollmentService(EnrollmentRepository enrollmentRepository, UserRepository userRepository, CourseRepository courseRepository) {
+    public EnrollmentService(
+            EnrollmentRepository enrollmentRepository,
+            UserRepository userRepository,
+            CourseRepository courseRepository
+    ) {
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
@@ -28,6 +32,7 @@ public class EnrollmentService {
 
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+
         var course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trilha não encontrada"));
 
@@ -47,16 +52,5 @@ public class EnrollmentService {
                 .stream()
                 .map(EnrollmentResponse::from)
                 .toList();
-    }
-
-    @Transactional
-    public EnrollmentResponse updateProgress(String email, Long courseId, UpdateProgressRequest request) {
-        var enrollment = enrollmentRepository.findByUserEmailAndCourseId(email, courseId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Matrícula não encontrada"));
-
-        int cappedCompleted = Math.min(request.completedLessons(), enrollment.getCourse().getTotalLessons());
-        enrollment.setCompletedLessons(cappedCompleted);
-        enrollment.setXp(request.xp());
-        return EnrollmentResponse.from(enrollmentRepository.save(enrollment));
     }
 }
