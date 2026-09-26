@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface LessonProgressRepository extends JpaRepository<LessonProgress, Long> {
 
+    boolean existsByLessonId(Long lessonId);
+
     Optional<LessonProgress> findByUserIdAndLessonId(Long userId, Long lessonId);
 
     @Query("""
