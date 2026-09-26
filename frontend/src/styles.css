@@ -755,3 +755,21 @@ button:disabled {
     gap: 6px;
   }
 }
+
+
+.catalog-state {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border: 1px solid #735126;
+  border-radius: 14px;
+  background: rgba(104, 68, 22, .18);
+  color: #ffd996;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.catalog-state span {
+  color: #c7b28e;
+  font-size: 14px;
+}

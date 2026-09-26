@@ -119,8 +119,23 @@ async function api<T>(path: string, options: RequestInit = {}, token?: string | 
   const response = await fetch(path, { ...options, headers })
 
   if (!response.ok) {
-    const payload = await response.json().catch(() => null)
-    throw new Error(payload?.detail || payload?.message || 'Não foi possível concluir a operação.')
+    const raw = await response.text()
+    let payload: { detail?: string; message?: string } | null = null
+
+    try {
+      payload = raw ? JSON.parse(raw) : null
+    } catch {
+      payload = null
+    }
+
+    const reason =
+      payload?.detail ||
+      payload?.message ||
+      raw ||
+      response.statusText ||
+      'Erro sem detalhes retornado pela API.'
+
+    throw new Error(`HTTP ${response.status} — ${reason}`)
   }
 
   return response.json()
@@ -128,6 +143,7 @@ async function api<T>(path: string, options: RequestInit = {}, token?: string | 
 
 export default function App() {
   const [courses, setCourses] = useState<Course[]>([])
+  const [coursesError, setCoursesError] = useState('')
   const [progress, setProgress] = useState<Progress | null>(null)
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [user, setUser] = useState<User | null>(null)
@@ -164,8 +180,22 @@ export default function App() {
 
   useEffect(() => {
     api<Course[]>('/api/v1/courses')
-      .then(setCourses)
-      .catch(() => setCourses([]))
+      .then(data => {
+        setCourses(data)
+        setCoursesError(
+          data.length === 0
+            ? 'O catálogo está vazio. Reinicie o backend para aplicar a migration de recuperação.'
+            : ''
+        )
+      })
+      .catch(error => {
+        setCourses([])
+        setCoursesError(
+          error instanceof Error
+            ? `Falha ao carregar trilhas: ${error.message}`
+            : 'Falha ao carregar trilhas.'
+        )
+      })
   }, [])
 
   useEffect(() => {
@@ -531,6 +561,13 @@ export default function App() {
               </span>
             )}
           </div>
+
+          {coursesError && (
+            <div className="catalog-state">
+              <strong>Catálogo indisponível</strong>
+              <span>{coursesError}</span>
+            </div>
+          )}
 
           <div className="grid">
             {courses.map(course => {
