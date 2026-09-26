@@ -6,7 +6,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/techmind}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:89327934}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -16,21 +16,18 @@ spring:
   flyway:
     enabled: true
 
-
 server:
   port: ${PORT:8080}
-
 
 app:
 
   security:
     jwt:
-      secret: ${JWT_SECRET:techmind-dev-secret-change-me-1234567890}
+      secret: ${JWT_SECRET}
       expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
-
 
 management:
 
