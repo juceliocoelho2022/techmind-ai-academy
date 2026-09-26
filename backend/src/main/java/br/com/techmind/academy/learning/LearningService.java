@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +17,7 @@ import java.util.stream.Collectors;
 public class LearningService {
 
     private final CourseRepository courseRepository;
+    private final CourseModuleRepository moduleRepository;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final LessonRepository lessonRepository;
@@ -26,6 +26,7 @@ public class LearningService {
 
     public LearningService(
             CourseRepository courseRepository,
+            CourseModuleRepository moduleRepository,
             UserRepository userRepository,
             EnrollmentRepository enrollmentRepository,
             LessonRepository lessonRepository,
@@ -33,6 +34,7 @@ public class LearningService {
             LessonResourceRepository lessonResourceRepository
     ) {
         this.courseRepository = courseRepository;
+        this.moduleRepository = moduleRepository;
         this.userRepository = userRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.lessonRepository = lessonRepository;
@@ -45,34 +47,30 @@ public class LearningService {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trilha não encontrada"));
 
+        var modules = moduleRepository.findByCourseIdOrderByPositionAsc(courseId);
         var lessons = lessonRepository.findCurriculumByCourseId(courseId);
+
+        Map<Long, List<Lesson>> lessonsByModule = lessons.stream()
+                .collect(Collectors.groupingBy(lesson -> lesson.getModule().getId()));
+
         Map<Long, List<LessonResource>> resourcesByLesson = lessonResourceRepository.findByCourseId(courseId)
                 .stream()
                 .collect(Collectors.groupingBy(resource -> resource.getLesson().getId()));
 
-        var grouped = new LinkedHashMap<Long, List<Lesson>>();
-
-        for (var lesson : lessons) {
-            grouped.computeIfAbsent(lesson.getModule().getId(), ignored -> new java.util.ArrayList<>())
-                    .add(lesson);
-        }
-
-        var modules = grouped.values().stream()
-                .map(group -> {
-                    var module = group.getFirst().getModule();
-                    return new LearningModuleResponse(
-                            module.getId(),
-                            module.getTitle(),
-                            module.getDescription(),
-                            module.getPosition(),
-                            group.stream()
-                                    .map(lesson -> LessonResponse.from(
-                                            lesson,
-                                            resourcesByLesson.getOrDefault(lesson.getId(), List.of())
-                                    ))
-                                    .toList()
-                    );
-                })
+        var moduleResponses = modules.stream()
+                .map(module -> new LearningModuleResponse(
+                        module.getId(),
+                        module.getTitle(),
+                        module.getDescription(),
+                        module.getPosition(),
+                        lessonsByModule.getOrDefault(module.getId(), List.of())
+                                .stream()
+                                .map(lesson -> LessonResponse.from(
+                                        lesson,
+                                        resourcesByLesson.getOrDefault(lesson.getId(), List.of())
+                                ))
+                                .toList()
+                ))
                 .toList();
 
         return new CourseCurriculumResponse(
@@ -81,7 +79,7 @@ public class LearningService {
                 course.getTitle(),
                 course.getTotalLessons(),
                 lessons.size(),
-                modules
+                moduleResponses
         );
     }
 

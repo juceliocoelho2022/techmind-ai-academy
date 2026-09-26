@@ -20,6 +20,19 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
             """)
     List<Lesson> findCurriculumByCourseId(@Param("courseId") Long courseId);
 
+    List<Lesson> findByModuleIdOrderByPositionAsc(Long moduleId);
+
+    Optional<Lesson> findByModuleIdAndPosition(Long moduleId, Integer position);
+
+    Optional<Lesson> findByModuleIdAndSlug(Long moduleId, String slug);
+
+    @Query("""
+            select coalesce(max(l.position), 0)
+            from Lesson l
+            where l.module.id = :moduleId
+            """)
+    int findMaxPositionByModuleId(@Param("moduleId") Long moduleId);
+
     @Override
     @EntityGraph(attributePaths = {"module", "module.course"})
     Optional<Lesson> findById(Long id);

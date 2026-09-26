@@ -20,6 +20,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     boolean existsByUserEmailAndCourseId(String email, Long courseId);
 
+    boolean existsByCourseId(Long courseId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             select e
