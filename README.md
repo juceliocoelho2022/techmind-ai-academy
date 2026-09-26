@@ -33,7 +33,7 @@ O MVP atual já oferece uma base full stack funcional para cadastro e autentica�
 
 A arquitetura foi mantida como **monólito modular**, priorizando simplicidade operacional, separação de responsabilidades e evolução incremental antes de qualquer migração prematura para microsserviços.
 
-> **Status atual:** MVP v0.2 — autenticação e jornada inicial do aluno.
+> **Status atual:** v0.3 em desenvolvimento — Learning Engine com módulos, aulas, conclusão idempotente e XP calculado no servidor.
 
 ---
 
@@ -79,6 +79,10 @@ A arquitetura foi mantida como **monólito modular**, priorizando simplicidade o
 - frontend React + TypeScript
 - execução local ou com Docker Compose
 - testes de autenticação e entrevista
+- currículo estruturado em módulos e aulas
+- conclusão idempotente de aulas
+- XP calculado exclusivamente pelo backend
+- lock transacional para atualização consistente de progresso
 
 ### Preparado para evolução
 
@@ -161,6 +165,7 @@ br.com.techmind.academy
 ├── course
 ├── enrollment
 ├── interview
+├── learning
 ├── progress
 ├── security
 └── user
@@ -175,6 +180,7 @@ br.com.techmind.academy
 | <code>enrollment</code> | matrícula e evolução por trilha |
 | <code>progress</code> | consolidação de XP e progresso |
 | <code>interview</code> | avaliação local de respostas para entrevistas |
+| <code>learning</code> | módulos, aulas, conclusão, XP e progresso detalhado |
 
 ---
 
@@ -256,6 +262,7 @@ erDiagram
 ~~~text
 V1__create_courses.sql
 V2__create_users_and_enrollments.sql
+V3__create_learning_engine.sql
 ~~~
 
 O Hibernate está configurado com <code>ddl-auto: validate</code>, deixando a evolução do schema sob responsabilidade explícita do Flyway.
@@ -272,6 +279,7 @@ O Hibernate está configurado com <code>ddl-auto: validate</code>, deixando a ev
 | POST | <code>/api/v1/auth/login</code> | autentica e retorna JWT |
 | GET | <code>/api/v1/courses</code> | lista as trilhas |
 | GET | <code>/api/v1/courses/{id}</code> | consulta uma trilha |
+| GET | <code>/api/v1/courses/{id}/curriculum</code> | retorna módulos e aulas disponíveis |
 | GET | <code>/actuator/health</code> | health check |
 
 ### Endpoints autenticados
@@ -281,7 +289,8 @@ O Hibernate está configurado com <code>ddl-auto: validate</code>, deixando a ev
 | GET | <code>/api/v1/users/me</code> | retorna o perfil autenticado |
 | POST | <code>/api/v1/enrollments/courses/{courseId}</code> | realiza matrícula |
 | GET | <code>/api/v1/enrollments/me</code> | lista matrículas do usuário |
-| PATCH | <code>/api/v1/enrollments/courses/{courseId}/progress</code> | atualiza aulas concluídas e XP |
+| GET | <code>/api/v1/learning/courses/{courseId}/progress</code> | retorna aulas concluídas e XP da trilha |
+| POST | <code>/api/v1/learning/lessons/{lessonId}/complete</code> | conclui uma aula e credita XP de forma idempotente |
 | GET | <code>/api/v1/progress/me</code> | retorna progresso agregado |
 | POST | <code>/api/v1/interviews/evaluate</code> | avalia resposta de entrevista |
 
@@ -356,6 +365,7 @@ techmind-ai-academy/
 │   │   │   │   ├── course/
 │   │   │   │   ├── enrollment/
 │   │   │   │   ├── interview/
+│   │   │   │   ├── learning/
 │   │   │   │   ├── progress/
 │   │   │   │   ├── security/
 │   │   │   │   └── user/
@@ -540,12 +550,12 @@ Credenciais de banco, segredo JWT e configurações de CORS são externalizadas 
 
 ### v0.3 — Learning Engine
 
-- [ ] módulos
-- [ ] aulas
-- [ ] conclusão de aula
+- [x] módulos
+- [x] aulas
+- [x] conclusão idempotente de aula
 - [ ] quizzes
 - [ ] desafios de código
-- [ ] XP por atividade
+- [x] XP por aula calculado no servidor
 - [ ] badges
 - [ ] dashboard detalhado de evolução
 
