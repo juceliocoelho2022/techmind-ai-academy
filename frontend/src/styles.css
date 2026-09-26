@@ -773,3 +773,125 @@ button:disabled {
   color: #c7b28e;
   font-size: 14px;
 }
+
+
+.lesson-resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.resource-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 210px;
+  padding: 9px 11px;
+  border: 1px solid #2a4863;
+  border-radius: 12px;
+  background: #0c2134;
+  color: #dff8ff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.resource-chip:not(:disabled):hover {
+  border-color: #55cce9;
+  background: #12304a;
+}
+
+.resource-chip > span {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resource-chip strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.resource-chip small {
+  color: #8296aa;
+  font-size: 10px;
+}
+
+.resource-admin {
+  margin-top: 12px;
+  border: 1px dashed #385879;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(18, 42, 63, .38);
+}
+
+.resource-admin summary {
+  cursor: pointer;
+  color: #69ddff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.resource-admin form {
+  display: grid;
+  grid-template-columns: .8fr 1fr 1.2fr 1.2fr auto;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.resource-admin input,
+.resource-admin select {
+  min-width: 0;
+  border: 1px solid #28425d;
+  border-radius: 10px;
+  background: #071523;
+  color: #edf8ff;
+  padding: 9px 10px;
+}
+
+.resource-admin input[type="file"] {
+  color: #a7b8ca;
+}
+
+.resource-admin button {
+  border: 0;
+  border-radius: 10px;
+  background: #1b4965;
+  color: #e4faff;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.resource-admin button:hover {
+  background: #256381;
+}
+
+@media (max-width: 900px) {
+  .resource-admin form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .resource-admin button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .resource-chip {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .resource-admin form {
+    grid-template-columns: 1fr;
+  }
+
+  .resource-admin button {
+    grid-column: auto;
+  }
+}
