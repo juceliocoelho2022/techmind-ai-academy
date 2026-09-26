@@ -2,57 +2,41 @@ services:
 
   postgres:
     image: postgres:17
-
     environment:
-      DB_URL: ${DB_URL:-jdbc:postgresql://postgres:5432/techmind}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-120}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
-
+      POSTGRES_DB: ${POSTGRES_DB:-techmind}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     ports:
       - "5432:5432"
-
     volumes:
       - techmind_pgdata:/var/lib/postgresql/data
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d techmind"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-techmind}"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-
   backend:
     build: ./backend
-
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/techmind
-      DB_USER: postgres
-      DB_PASSWORD: "89327934"
-
-      JWT_SECRET: change-this-in-production-techmind-secret-2026
-
-      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
-
+      DB_URL: ${DB_URL:-jdbc:postgresql://postgres:5432/techmind}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-120}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
     ports:
       - "8080:8080"
-
     depends_on:
       postgres:
         condition: service_healthy
 
-
   frontend:
     build: ./frontend
-
     ports:
       - "3000:80"
-
     depends_on:
       - backend
-
 
 volumes:
   techmind_pgdata:
