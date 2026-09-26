@@ -17,6 +17,7 @@ import java.util.UUID;
 @Service
 public class LessonResourceStorageService {
 
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "mov", "avi", "webm");
     private static final Set<String> ZIP_EXTENSIONS = Set.of("zip");
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("png", "jpg", "jpeg", "webp");
     private static final Set<String> EBOOK_EXTENSIONS = Set.of("pdf", "epub");
@@ -26,7 +27,7 @@ public class LessonResourceStorageService {
 
     public LessonResourceStorageService(
             @Value("${app.storage.learning-resources-root:./storage/learning-resources}") String root,
-            @Value("${app.storage.learning-resources-max-bytes:104857600}") long maxBytes
+            @Value("${app.storage.learning-resources-max-bytes:524288000}") long maxBytes
     ) {
         this.root = Paths.get(root).toAbsolutePath().normalize();
         this.maxBytes = maxBytes;
@@ -119,6 +120,7 @@ public class LessonResourceStorageService {
 
     private void validateExtension(LessonResourceType type, String extension) {
         boolean valid = switch (type) {
+            case VIDEO -> VIDEO_EXTENSIONS.contains(extension);
             case PROJECT_ZIP -> ZIP_EXTENSIONS.contains(extension);
             case IMAGE -> IMAGE_EXTENSIONS.contains(extension);
             case EBOOK -> EBOOK_EXTENSIONS.contains(extension);

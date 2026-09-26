@@ -18,8 +18,8 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 105MB
+      max-file-size: 500MB
+      max-request-size: 505MB
 
 server:
   port: ${PORT:8080}
@@ -36,7 +36,7 @@ app:
 
   storage:
     learning-resources-root: ${LEARNING_RESOURCES_ROOT:./storage/learning-resources}
-    learning-resources-max-bytes: ${LEARNING_RESOURCES_MAX_BYTES:104857600}
+    learning-resources-max-bytes: ${LEARNING_RESOURCES_MAX_BYTES:524288000}
 
 management:
 
