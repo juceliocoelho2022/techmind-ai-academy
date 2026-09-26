@@ -25,6 +25,7 @@ class LearningServiceTest {
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var lessonRepository = mock(LessonRepository.class);
         var progressRepository = mock(LessonProgressRepository.class);
+        var resourceRepository = mock(LessonResourceRepository.class);
 
         var course = Course.builder()
                 .id(1L)
@@ -78,7 +79,8 @@ class LearningServiceTest {
                 userRepository,
                 enrollmentRepository,
                 lessonRepository,
-                progressRepository
+                progressRepository,
+                resourceRepository
         );
 
         var response = service.curriculum(1L);
@@ -95,6 +97,7 @@ class LearningServiceTest {
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var lessonRepository = mock(LessonRepository.class);
         var progressRepository = mock(LessonProgressRepository.class);
+        var resourceRepository = mock(LessonResourceRepository.class);
 
         var course = Course.builder()
                 .id(1L)
@@ -151,7 +154,8 @@ class LearningServiceTest {
                 userRepository,
                 enrollmentRepository,
                 lessonRepository,
-                progressRepository
+                progressRepository,
+                resourceRepository
         );
 
         var response = service.completeLesson("aluno@techmind.dev", 100L);
@@ -172,6 +176,7 @@ class LearningServiceTest {
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var lessonRepository = mock(LessonRepository.class);
         var progressRepository = mock(LessonProgressRepository.class);
+        var resourceRepository = mock(LessonResourceRepository.class);
 
         var course = Course.builder()
                 .id(1L)
@@ -234,7 +239,8 @@ class LearningServiceTest {
                 userRepository,
                 enrollmentRepository,
                 lessonRepository,
-                progressRepository
+                progressRepository,
+                resourceRepository
         );
 
         var response = service.completeLesson("aluno@techmind.dev", 100L);

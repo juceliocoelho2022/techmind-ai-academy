@@ -18,6 +18,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @EntityGraph(attributePaths = "course")
     Optional<Enrollment> findByUserEmailAndCourseId(String email, Long courseId);
 
+    boolean existsByUserEmailAndCourseId(String email, Long courseId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             select e
