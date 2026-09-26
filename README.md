@@ -18,6 +18,7 @@
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
   <img alt="Status" src="https://img.shields.io/badge/status-MVP%20v0.2-7C3AED">
+  <a href="https://github.com/juceliocoelho2022/techmind-ai-academy/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/juceliocoelho2022/techmind-ai-academy/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
 ---
@@ -108,6 +109,8 @@ O seed inicial do banco cria quatro trilhas:
 ---
 
 ## Arquitetura
+
+> Documentação técnica detalhada: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
 
 ~~~mermaid
 flowchart LR
@@ -373,7 +376,8 @@ techmind-ai-academy/
 │   ├── nginx.conf
 │   └── package.json
 ├── docs/
-│   └── api.http
+│   ├── api.http
+│   └── ARCHITECTURE.md
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
@@ -561,7 +565,8 @@ Credenciais de banco, segredo JWT e configurações de CORS são externalizadas 
 - [ ] certificados
 - [ ] assinatura/pagamentos
 - [ ] observabilidade
-- [ ] pipeline CI/CD
+- [x] pipeline CI de build/test
+- [ ] pipeline CD
 - [ ] deploy cloud
 - [ ] métricas de produto e aprendizagem
 
