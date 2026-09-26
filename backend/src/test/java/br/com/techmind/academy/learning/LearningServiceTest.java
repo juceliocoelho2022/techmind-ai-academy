@@ -21,6 +21,7 @@ class LearningServiceTest {
     @Test
     void shouldGroupCurriculumByModule() {
         var courseRepository = mock(CourseRepository.class);
+        var moduleRepository = mock(CourseModuleRepository.class);
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var lessonRepository = mock(LessonRepository.class);
@@ -72,10 +73,12 @@ class LearningServiceTest {
                 .build();
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(moduleRepository.findByCourseIdOrderByPositionAsc(1L)).thenReturn(List.of(fundamentals, api));
         when(lessonRepository.findCurriculumByCourseId(1L)).thenReturn(List.of(lesson1, lesson2));
 
         var service = new LearningService(
                 courseRepository,
+                moduleRepository,
                 userRepository,
                 enrollmentRepository,
                 lessonRepository,
@@ -93,6 +96,7 @@ class LearningServiceTest {
     @Test
     void shouldAwardXpOnlyOnFirstCompletion() {
         var courseRepository = mock(CourseRepository.class);
+        var moduleRepository = mock(CourseModuleRepository.class);
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var lessonRepository = mock(LessonRepository.class);
@@ -151,6 +155,7 @@ class LearningServiceTest {
 
         var service = new LearningService(
                 courseRepository,
+                moduleRepository,
                 userRepository,
                 enrollmentRepository,
                 lessonRepository,
@@ -172,6 +177,7 @@ class LearningServiceTest {
     @Test
     void shouldBeIdempotentWhenLessonWasAlreadyCompleted() {
         var courseRepository = mock(CourseRepository.class);
+        var moduleRepository = mock(CourseModuleRepository.class);
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var lessonRepository = mock(LessonRepository.class);
@@ -236,6 +242,7 @@ class LearningServiceTest {
 
         var service = new LearningService(
                 courseRepository,
+                moduleRepository,
                 userRepository,
                 enrollmentRepository,
                 lessonRepository,
