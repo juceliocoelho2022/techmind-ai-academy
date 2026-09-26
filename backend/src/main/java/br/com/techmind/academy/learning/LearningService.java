@@ -99,7 +99,7 @@ public class LearningService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aula não encontrada"));
 
         var course = lesson.getModule().getCourse();
-        var enrollment = enrollmentRepository.findByUserEmailAndCourseId(email, course.getId())
+        var enrollment = enrollmentRepository.findForUpdateByUserEmailAndCourseId(email, course.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.CONFLICT,
                         "Matricule-se na trilha antes de concluir aulas"
