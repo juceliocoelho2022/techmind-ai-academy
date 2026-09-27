@@ -5,21 +5,43 @@ import lombok.*;
 
 @Entity
 @Table(name = "courses")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 120)
     private String slug;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 200)
     private String title;
 
     @Column(nullable = false, length = 500)
     private String description;
 
+    @Column(nullable = false, length = 80)
+    private String category;
+
+    @Column(nullable = false, length = 80)
+    private String technology;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private CourseLevel level;
+
     @Column(nullable = false)
     private Integer totalLessons;
+
+    @PrePersist
+    void prePersist() {
+        if (category == null || category.isBlank()) category = "Geral";
+        if (technology == null || technology.isBlank()) technology = "Geral";
+        if (level == null) level = CourseLevel.INTERMEDIATE;
+        if (totalLessons == null) totalLessons = 0;
+    }
 }
