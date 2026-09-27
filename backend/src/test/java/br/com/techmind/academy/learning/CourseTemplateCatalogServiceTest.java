@@ -128,6 +128,44 @@ class CourseTemplateCatalogServiceTest {
     }
 
     @Test
+    void shouldExposeCareerInterviewTemplateAsCareerOnly() {
+        var courseRepository = mock(CourseRepository.class);
+        var moduleRepository = mock(CourseModuleRepository.class);
+        var lessonRepository = mock(LessonRepository.class);
+        var userRepository = mock(UserRepository.class);
+        var auditService = mock(AdminAuditService.class);
+
+        var admin = User.builder()
+                .id(1L)
+                .name("Admin")
+                .email("admin@techmind.dev")
+                .passwordHash("hash")
+                .role(UserRole.ADMIN)
+                .build();
+
+        when(userRepository.findByEmail("admin@techmind.dev"))
+                .thenReturn(Optional.of(admin));
+
+        var service = new CourseTemplateCatalogService(
+                courseRepository,
+                moduleRepository,
+                lessonRepository,
+                auditService,
+                userRepository
+        );
+
+        var career = service.catalog("admin@techmind.dev").stream()
+                .filter(template -> template.key().equals("career-interviews"))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(career.category()).isEqualTo("Carreira");
+        assertThat(career.requiredPlan()).isEqualTo(SubscriptionPlan.CAREER);
+        assertThat(career.modules()).hasSize(4);
+        assertThat(career.totalLessons()).isEqualTo(8);
+    }
+
+    @Test
     void shouldCreateCourseWithoutStarterStructureWhenDisabled() {
         var courseRepository = mock(CourseRepository.class);
         var moduleRepository = mock(CourseModuleRepository.class);
