@@ -2,6 +2,7 @@ package br.com.techmind.academy.auth;
 
 import br.com.techmind.academy.security.JwtService;
 import br.com.techmind.academy.settings.PlatformSettingsService;
+import br.com.techmind.academy.subscription.SubscriptionService;
 import br.com.techmind.academy.user.User;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserResponse;
@@ -20,17 +21,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PlatformSettingsService settingsService;
+    private final SubscriptionService subscriptionService;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            PlatformSettingsService settingsService
+            PlatformSettingsService settingsService,
+            SubscriptionService subscriptionService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.settingsService = settingsService;
+        this.subscriptionService = subscriptionService;
     }
 
     @Transactional
@@ -55,6 +59,7 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
+        subscriptionService.ensureFreeSubscription(user);
         return responseFor(user);
     }
 
