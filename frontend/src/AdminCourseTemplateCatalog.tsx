@@ -14,6 +14,7 @@ import {
 import './admin-course-template-catalog.css'
 
 type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+type SubscriptionPlan = 'FREE' | 'PRO' | 'CAREER'
 
 type Course = {
   id: number
@@ -23,6 +24,7 @@ type Course = {
   category: string
   technology: string
   level: CourseLevel
+  requiredPlan: SubscriptionPlan
   totalLessons: number
 }
 
@@ -46,6 +48,7 @@ type CourseTemplate = {
   category: string
   technology: string
   level: CourseLevel
+  requiredPlan: SubscriptionPlan
   title: string
   slug: string
   description: string
@@ -88,6 +91,8 @@ export default function AdminCourseTemplateCatalog({
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
   const [selectedLevel, setSelectedLevel] = useState<CourseLevel>('BEGINNER')
+  const [selectedRequiredPlan, setSelectedRequiredPlan] =
+    useState<SubscriptionPlan>('FREE')
   const [createStructure, setCreateStructure] = useState(true)
   const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -151,6 +156,7 @@ export default function AdminCourseTemplateCatalog({
     setSlug(template.slug)
     setDescription(template.description)
     setSelectedLevel(template.level)
+    setSelectedRequiredPlan(template.requiredPlan)
     setCreateStructure(true)
   }
 
@@ -178,6 +184,7 @@ export default function AdminCourseTemplateCatalog({
             slug,
             description,
             level: selectedLevel,
+            requiredPlan: selectedRequiredPlan,
             createStructure
           })
         }
@@ -299,6 +306,7 @@ export default function AdminCourseTemplateCatalog({
 
                 <div className="course-template-meta">
                   <span>{template.technology}</span>
+                  <span>Plano {template.requiredPlan}</span>
                   <span>{template.modules.length} módulos</span>
                   <span>{template.totalLessons} aulas</span>
                 </div>
@@ -367,6 +375,20 @@ export default function AdminCourseTemplateCatalog({
                 </select>
               </label>
 
+              <label>
+                <span>Plano mínimo *</span>
+                <select
+                  value={selectedRequiredPlan}
+                  onChange={event =>
+                    setSelectedRequiredPlan(event.target.value as SubscriptionPlan)
+                  }
+                >
+                  <option value="FREE">FREE</option>
+                  <option value="PRO">PRO</option>
+                  <option value="CAREER">CAREER</option>
+                </select>
+              </label>
+
               <label className="wide">
                 <span>Descrição *</span>
                 <textarea
@@ -421,7 +443,7 @@ export default function AdminCourseTemplateCatalog({
             <div className="course-template-actions">
               <div>
                 <CheckCircle2 size={16} />
-                Categoria e tecnologia serão vinculadas automaticamente.
+                Categoria, tecnologia e plano mínimo serão vinculados à trilha.
               </div>
 
               <button className="admin-save" disabled={creating}>
