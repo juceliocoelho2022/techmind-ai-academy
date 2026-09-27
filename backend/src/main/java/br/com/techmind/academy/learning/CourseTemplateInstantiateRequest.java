@@ -1,6 +1,7 @@
 package br.com.techmind.academy.learning;
 
 import br.com.techmind.academy.course.CourseLevel;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -25,6 +26,9 @@ public record CourseTemplateInstantiateRequest(
 
         @NotNull
         CourseLevel level,
+
+        @NotNull
+        SubscriptionPlan requiredPlan,
 
         @NotNull
         Boolean createStructure

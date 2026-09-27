@@ -5,6 +5,7 @@ import br.com.techmind.academy.enrollment.Enrollment;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
 import br.com.techmind.academy.learning.CourseModule;
 import br.com.techmind.academy.learning.Lesson;
+import br.com.techmind.academy.subscription.CourseEntitlementService;
 import br.com.techmind.academy.user.User;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
@@ -25,6 +26,7 @@ class QuizServiceTest {
         var attemptRepository = mock(QuizAttemptRepository.class);
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
+        var entitlementService = mock(CourseEntitlementService.class);
 
         var fixture = fixture();
 
@@ -45,7 +47,8 @@ class QuizServiceTest {
                 quizRepository,
                 attemptRepository,
                 userRepository,
-                enrollmentRepository
+                enrollmentRepository,
+                entitlementService
         );
 
         var response = service.submit(
@@ -73,6 +76,7 @@ class QuizServiceTest {
         var attemptRepository = mock(QuizAttemptRepository.class);
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
+        var entitlementService = mock(CourseEntitlementService.class);
 
         var fixture = fixture();
 
@@ -91,7 +95,8 @@ class QuizServiceTest {
                 quizRepository,
                 attemptRepository,
                 userRepository,
-                enrollmentRepository
+                enrollmentRepository,
+                entitlementService
         );
 
         var response = service.submit(

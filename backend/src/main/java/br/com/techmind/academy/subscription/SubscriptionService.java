@@ -186,6 +186,7 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public SubscriptionPlan currentPlanForUser(Long userId) {
         return subscriptionRepository.findByUserId(userId)
+                .filter(subscription -> subscription.getStatus() == SubscriptionStatus.ACTIVE)
                 .map(UserSubscription::getPlanCode)
                 .orElse(SubscriptionPlan.FREE);
     }

@@ -4,6 +4,7 @@ import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseLevel;
 import br.com.techmind.academy.course.CourseRepository;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
 import org.springframework.http.HttpStatus;
@@ -74,6 +75,7 @@ public class CourseTemplateCatalogService {
                 .category(template.category())
                 .technology(template.technology())
                 .level(request.level())
+                .requiredPlan(request.requiredPlan())
                 .totalLessons(template.totalLessons())
                 .build();
 
@@ -123,6 +125,7 @@ public class CourseTemplateCatalogService {
                         "Backend",
                         "Java",
                         CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.PRO,
                         "Java Backend",
                         "java-backend",
                         "Java 21, orientação a objetos, APIs REST, persistência, testes e práticas de backend.",
@@ -160,6 +163,7 @@ public class CourseTemplateCatalogService {
                         "Backend",
                         "Spring Boot",
                         CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.PRO,
                         "Spring Boot",
                         "spring-boot-profissional",
                         "Spring Boot com arquitetura em camadas, JPA, segurança, testes, observabilidade e resiliência.",
@@ -197,6 +201,7 @@ public class CourseTemplateCatalogService {
                         "Frontend",
                         "React.js",
                         CourseLevel.BEGINNER,
+                        SubscriptionPlan.PRO,
                         "React.js",
                         "react-js",
                         "React moderno com JavaScript/TypeScript, componentes, estado, consumo de APIs e projeto final.",
@@ -234,6 +239,7 @@ public class CourseTemplateCatalogService {
                         "Banco de Dados",
                         "SQL",
                         CourseLevel.BEGINNER,
+                        SubscriptionPlan.FREE,
                         "Banco de Dados & SQL",
                         "banco-de-dados-sql",
                         "Modelagem relacional, SQL, joins, transações, índices e projeto de banco de dados.",
@@ -271,6 +277,7 @@ public class CourseTemplateCatalogService {
                         "Banco de Dados",
                         "PostgreSQL",
                         CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.PRO,
                         "PostgreSQL",
                         "postgresql",
                         "PostgreSQL com modelagem, SQL avançado, desempenho, segurança, backup e operação.",
@@ -308,6 +315,7 @@ public class CourseTemplateCatalogService {
                         "Cloud",
                         "AWS",
                         CourseLevel.BEGINNER,
+                        SubscriptionPlan.PRO,
                         "AWS Cloud",
                         "aws-cloud-profissional",
                         "Fundamentos AWS, redes, compute, storage, bancos, containers, observabilidade e custos.",
@@ -345,6 +353,7 @@ public class CourseTemplateCatalogService {
                         "DevOps",
                         "DevOps",
                         CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.PRO,
                         "DevOps",
                         "devops",
                         "Git, Linux, Docker, CI/CD, Kubernetes, infraestrutura como código e observabilidade.",
@@ -382,6 +391,7 @@ public class CourseTemplateCatalogService {
                         "Programação",
                         "Java",
                         CourseLevel.BEGINNER,
+                        SubscriptionPlan.FREE,
                         "Java",
                         "java-fundamentos",
                         "Java do zero com sintaxe, orientação a objetos, collections, exceções, lambdas, streams e projeto prático.",
@@ -419,6 +429,7 @@ public class CourseTemplateCatalogService {
                         "Programação",
                         "Python",
                         CourseLevel.BEGINNER,
+                        SubscriptionPlan.FREE,
                         "Python",
                         "python",
                         "Python do zero a aplicações práticas, APIs, automação, testes e manipulação de dados.",
@@ -456,6 +467,7 @@ public class CourseTemplateCatalogService {
                         "Dados & IA",
                         "IA Generativa",
                         CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.PRO,
                         "IA Generativa",
                         "ia-generativa",
                         "LLMs, prompt engineering, RAG, agentes, tool calling, guardrails e avaliação de aplicações de IA.",
@@ -489,10 +501,49 @@ public class CourseTemplateCatalogService {
                         )
                 ),
                 template(
+                        "career-interviews",
+                        "Carreira",
+                        "Entrevistas Tech",
+                        CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.CAREER,
+                        "Preparação para Entrevistas Tech",
+                        "entrevistas-tech",
+                        "Preparação prática para processos seletivos com currículo, portfólio, entrevistas técnicas, comportamento e plano Job Ready.",
+                        module(
+                                1,
+                                "Posicionamento Profissional",
+                                "Organize sua apresentação profissional para vagas de tecnologia.",
+                                lesson(1, "curriculo-tech", "Currículo Tech", "Estrutura, palavras-chave, projetos e resultados para processos seletivos.", 20),
+                                lesson(2, "linkedin-github", "LinkedIn, GitHub e Portfólio", "Posicionamento, evidências técnicas e apresentação dos projetos.", 20)
+                        ),
+                        module(
+                                2,
+                                "Entrevista Técnica",
+                                "Treine fundamentos e decisões técnicas com clareza.",
+                                lesson(1, "java-spring-interview", "Java e Spring em Entrevistas", "Fundamentos, arquitetura, APIs, testes e perguntas recorrentes.", 25),
+                                lesson(2, "sql-cloud-interview", "SQL, APIs e Cloud", "Consultas, modelagem, REST, Docker, AWS e trade-offs.", 25)
+                        ),
+                        module(
+                                3,
+                                "Comportamental",
+                                "Transforme experiências em respostas objetivas e convincentes.",
+                                lesson(1, "metodo-star", "Método STAR", "Situação, tarefa, ação e resultado aplicados a entrevistas.", 20),
+                                lesson(2, "comunicacao-decisoes", "Comunicação e Decisões Técnicas", "Explique escolhas, trade-offs, erros e aprendizados.", 25)
+                        ),
+                        module(
+                                4,
+                                "Job Ready",
+                                "Consolide preparação e próximos passos.",
+                                lesson(1, "simulado-completo", "Simulado Completo", "Entrevista técnica e comportamental com roteiro estruturado.", 35),
+                                lesson(2, "plano-30-dias", "Plano Job Ready de 30 Dias", "Plano de estudo, candidaturas, revisão e acompanhamento.", 30)
+                        )
+                ),
+                template(
                         "android-kotlin",
                         "Mobile",
                         "Kotlin / Android",
                         CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.PRO,
                         "Android com Kotlin",
                         "android-kotlin",
                         "Kotlin, Jetpack Compose, arquitetura, navegação, APIs e testes para Android moderno.",
@@ -533,6 +584,7 @@ public class CourseTemplateCatalogService {
             String category,
             String technology,
             CourseLevel level,
+            SubscriptionPlan requiredPlan,
             String title,
             String slug,
             String description,
@@ -548,6 +600,7 @@ public class CourseTemplateCatalogService {
                 category,
                 technology,
                 level,
+                requiredPlan,
                 title,
                 slug,
                 description,

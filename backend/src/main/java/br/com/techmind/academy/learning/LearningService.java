@@ -3,6 +3,8 @@ package br.com.techmind.academy.learning;
 import br.com.techmind.academy.course.CourseRepository;
 import br.com.techmind.academy.enrollment.Enrollment;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
+import br.com.techmind.academy.subscription.CourseEntitlementService;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 import br.com.techmind.academy.user.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class LearningService {
     private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
     private final LessonResourceRepository lessonResourceRepository;
+    private final CourseEntitlementService entitlementService;
 
     public LearningService(
             CourseRepository courseRepository,
@@ -31,7 +34,8 @@ public class LearningService {
             EnrollmentRepository enrollmentRepository,
             LessonRepository lessonRepository,
             LessonProgressRepository lessonProgressRepository,
-            LessonResourceRepository lessonResourceRepository
+            LessonResourceRepository lessonResourceRepository,
+            CourseEntitlementService entitlementService
     ) {
         this.courseRepository = courseRepository;
         this.moduleRepository = moduleRepository;
@@ -40,10 +44,11 @@ public class LearningService {
         this.lessonRepository = lessonRepository;
         this.lessonProgressRepository = lessonProgressRepository;
         this.lessonResourceRepository = lessonResourceRepository;
+        this.entitlementService = entitlementService;
     }
 
     @Transactional(readOnly = true)
-    public CourseCurriculumResponse curriculum(Long courseId) {
+    public CourseCurriculumResponse curriculum(Long courseId, String email) {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trilha não encontrada"));
 
@@ -53,9 +58,16 @@ public class LearningService {
         Map<Long, List<Lesson>> lessonsByModule = lessons.stream()
                 .collect(Collectors.groupingBy(lesson -> lesson.getModule().getId()));
 
-        Map<Long, List<LessonResource>> resourcesByLesson = lessonResourceRepository.findByCourseId(courseId)
-                .stream()
-                .collect(Collectors.groupingBy(resource -> resource.getLesson().getId()));
+        boolean canAccessPremiumContent =
+                course.getRequiredPlan() == null
+                        || course.getRequiredPlan() == SubscriptionPlan.FREE
+                        || (email != null && entitlementService.hasAccess(email, course));
+
+        Map<Long, List<LessonResource>> resourcesByLesson = canAccessPremiumContent
+                ? lessonResourceRepository.findByCourseId(courseId)
+                        .stream()
+                        .collect(Collectors.groupingBy(resource -> resource.getLesson().getId()))
+                : Map.of();
 
         var moduleResponses = modules.stream()
                 .map(module -> new LearningModuleResponse(
@@ -85,6 +97,11 @@ public class LearningService {
 
     @Transactional(readOnly = true)
     public LearningProgressResponse progress(String email, Long courseId) {
+        var course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trilha não encontrada"));
+
+        entitlementService.requireAccess(email, course);
+
         var enrollment = enrollmentRepository.findByUserEmailAndCourseId(email, courseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Matrícula não encontrada"));
 
@@ -111,6 +128,8 @@ public class LearningService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aula não encontrada"));
 
         var course = lesson.getModule().getCourse();
+        entitlementService.requireAccess(user, course);
+
         var enrollment = enrollmentRepository.findForUpdateByUserEmailAndCourseId(email, course.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.CONFLICT,

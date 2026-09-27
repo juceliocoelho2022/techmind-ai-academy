@@ -1,6 +1,7 @@
 package br.com.techmind.academy.quiz;
 
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
+import br.com.techmind.academy.subscription.CourseEntitlementService;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
 import org.springframework.http.HttpStatus;
@@ -22,17 +23,20 @@ public class QuizService {
     private final QuizAttemptRepository attemptRepository;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final CourseEntitlementService entitlementService;
 
     public QuizService(
             LessonQuizRepository quizRepository,
             QuizAttemptRepository attemptRepository,
             UserRepository userRepository,
-            EnrollmentRepository enrollmentRepository
+            EnrollmentRepository enrollmentRepository,
+            CourseEntitlementService entitlementService
     ) {
         this.quizRepository = quizRepository;
         this.attemptRepository = attemptRepository;
         this.userRepository = userRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.entitlementService = entitlementService;
     }
 
     @Transactional(readOnly = true)
@@ -40,6 +44,7 @@ public class QuizService {
         var user = findUser(email);
         var quiz = findActiveQuiz(lessonId);
 
+        entitlementService.requireAccess(user, quiz.getLesson().getModule().getCourse());
         requireEnrollmentOrAdmin(user.getRole(), email, quiz);
         initializeOptions(quiz);
 
@@ -51,6 +56,7 @@ public class QuizService {
         var user = findUser(email);
         var quiz = findActiveQuiz(lessonId);
 
+        entitlementService.requireAccess(user, quiz.getLesson().getModule().getCourse());
         requireEnrollmentOrAdmin(user.getRole(), email, quiz);
 
         return attemptRepository.findByQuizIdAndUserEmailOrderBySubmittedAtDesc(quiz.getId(), email)
@@ -65,7 +71,9 @@ public class QuizService {
         var quiz = findActiveQuiz(lessonId);
         initializeOptions(quiz);
 
-        var courseId = quiz.getLesson().getModule().getCourse().getId();
+        var course = quiz.getLesson().getModule().getCourse();
+        entitlementService.requireAccess(user, course);
+        var courseId = course.getId();
 
         var enrollment = enrollmentRepository.findForUpdateByUserEmailAndCourseId(email, courseId)
                 .orElseThrow(() -> new ResponseStatusException(

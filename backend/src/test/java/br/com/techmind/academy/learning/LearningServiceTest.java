@@ -4,6 +4,8 @@ import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseRepository;
 import br.com.techmind.academy.enrollment.Enrollment;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
+import br.com.techmind.academy.subscription.CourseEntitlementService;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 import br.com.techmind.academy.user.User;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
@@ -27,6 +29,7 @@ class LearningServiceTest {
         var lessonRepository = mock(LessonRepository.class);
         var progressRepository = mock(LessonProgressRepository.class);
         var resourceRepository = mock(LessonResourceRepository.class);
+        var entitlementService = mock(CourseEntitlementService.class);
 
         var course = Course.builder()
                 .id(1L)
@@ -83,14 +86,77 @@ class LearningServiceTest {
                 enrollmentRepository,
                 lessonRepository,
                 progressRepository,
-                resourceRepository
+                resourceRepository,
+                entitlementService
         );
 
-        var response = service.curriculum(1L);
+        var response = service.curriculum(1L, null);
 
         assertThat(response.modules()).hasSize(2);
         assertThat(response.availableLessons()).isEqualTo(2);
         assertThat(response.modules().get(0).lessons().get(0).title()).isEqualTo("Java 21");
+    }
+
+    @Test
+    void shouldHidePremiumResourcesFromAnonymousCurriculumPreview() {
+        var courseRepository = mock(CourseRepository.class);
+        var moduleRepository = mock(CourseModuleRepository.class);
+        var userRepository = mock(UserRepository.class);
+        var enrollmentRepository = mock(EnrollmentRepository.class);
+        var lessonRepository = mock(LessonRepository.class);
+        var progressRepository = mock(LessonProgressRepository.class);
+        var resourceRepository = mock(LessonResourceRepository.class);
+        var entitlementService = mock(CourseEntitlementService.class);
+
+        var course = Course.builder()
+                .id(1L)
+                .slug("java-backend")
+                .title("Java Backend")
+                .description("Java")
+                .requiredPlan(SubscriptionPlan.PRO)
+                .totalLessons(1)
+                .build();
+
+        var module = CourseModule.builder()
+                .id(10L)
+                .course(course)
+                .title("Fundamentos")
+                .description("Base Java")
+                .position(1)
+                .build();
+
+        var lesson = Lesson.builder()
+                .id(100L)
+                .module(module)
+                .slug("java-21")
+                .title("Java 21")
+                .summary("Java moderno")
+                .position(1)
+                .xpReward(10)
+                .build();
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(moduleRepository.findByCourseIdOrderByPositionAsc(1L))
+                .thenReturn(List.of(module));
+        when(lessonRepository.findCurriculumByCourseId(1L))
+                .thenReturn(List.of(lesson));
+
+        var service = new LearningService(
+                courseRepository,
+                moduleRepository,
+                userRepository,
+                enrollmentRepository,
+                lessonRepository,
+                progressRepository,
+                resourceRepository,
+                entitlementService
+        );
+
+        var response = service.curriculum(1L, null);
+
+        assertThat(response.modules()).hasSize(1);
+        assertThat(response.modules().get(0).lessons()).hasSize(1);
+        verify(resourceRepository, never()).findByCourseId(1L);
     }
 
     @Test
@@ -102,6 +168,7 @@ class LearningServiceTest {
         var lessonRepository = mock(LessonRepository.class);
         var progressRepository = mock(LessonProgressRepository.class);
         var resourceRepository = mock(LessonResourceRepository.class);
+        var entitlementService = mock(CourseEntitlementService.class);
 
         var course = Course.builder()
                 .id(1L)
@@ -160,7 +227,8 @@ class LearningServiceTest {
                 enrollmentRepository,
                 lessonRepository,
                 progressRepository,
-                resourceRepository
+                resourceRepository,
+                entitlementService
         );
 
         var response = service.completeLesson("aluno@techmind.dev", 100L);
@@ -183,6 +251,7 @@ class LearningServiceTest {
         var lessonRepository = mock(LessonRepository.class);
         var progressRepository = mock(LessonProgressRepository.class);
         var resourceRepository = mock(LessonResourceRepository.class);
+        var entitlementService = mock(CourseEntitlementService.class);
 
         var course = Course.builder()
                 .id(1L)
@@ -247,7 +316,8 @@ class LearningServiceTest {
                 enrollmentRepository,
                 lessonRepository,
                 progressRepository,
-                resourceRepository
+                resourceRepository,
+                entitlementService
         );
 
         var response = service.completeLesson("aluno@techmind.dev", 100L);

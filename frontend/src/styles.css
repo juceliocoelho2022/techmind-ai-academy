@@ -956,3 +956,103 @@ button:disabled {
     font-size: 9px;
   }
 }
+
+.course-badges {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.course-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 8px;
+  border: 1px solid #2e5069;
+  background: #0d2232;
+  color: #8da7b9;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.course-plan-badge.pro {
+  border-color: #2c7997;
+  background: #0d3449;
+  color: #9cecff;
+}
+
+.course-plan-badge.career {
+  border-color: #5d52a4;
+  background: #282157;
+  color: #c5bdff;
+}
+
+.course-card.locked {
+  border-color: #2a3d50;
+}
+
+.course-card.locked .icon {
+  opacity: .72;
+}
+
+.course-card.locked > h4,
+.course-card.locked > p {
+  opacity: .82;
+}
+
+.plan-gate {
+  margin: 14px 0;
+  padding: 16px;
+  border: 1px solid #6659a7;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(114, 92, 232, .18), transparent 42%),
+    #11172b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.plan-gate > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.plan-gate > div > svg {
+  flex: 0 0 auto;
+  color: #b6adff;
+}
+
+.plan-gate > div > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.plan-gate strong {
+  color: #eeeaff;
+  font-size: 13px;
+}
+
+.plan-gate span {
+  max-width: 720px;
+  color: #9d98bd;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .plan-gate {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .plan-gate .primary {
+    justify-content: center;
+  }
+}

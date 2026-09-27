@@ -27,6 +27,8 @@ import {
   UserPlus
 } from 'lucide-react'
 
+type SubscriptionPlan = 'FREE' | 'PRO' | 'CAREER'
+
 type Course = {
   id: number
   slug: string
@@ -35,6 +37,7 @@ type Course = {
   category: string
   technology: string
   level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  requiredPlan: SubscriptionPlan
   totalLessons: number
 }
 
@@ -136,7 +139,7 @@ type PublicPlatformSettings = {
 
 type MySubscription = {
   userId: number
-  plan: 'FREE' | 'PRO' | 'CAREER'
+  plan: SubscriptionPlan
   status: 'ACTIVE' | 'CANCELED' | 'PAST_DUE'
   source: 'FREE' | 'MANUAL' | 'PAYMENT'
   startedAt: string
@@ -160,6 +163,12 @@ const icons: Record<string, typeof Code2> = {
 const TOKEN_KEY = 'techmind.accessToken'
 const PLAN_KEY = 'techmind.selectedPlan'
 const BILLING_KEY = 'techmind.selectedBillingPeriod'
+
+const PLAN_RANK: Record<SubscriptionPlan, number> = {
+  FREE: 0,
+  PRO: 1,
+  CAREER: 2
+}
 
 const DEFAULT_PLATFORM_SETTINGS: PublicPlatformSettings = {
   academyName: 'TechMind AI Academy',
@@ -214,6 +223,9 @@ export default function App() {
     DEFAULT_PLATFORM_SETTINGS
   )
 
+  const effectivePlan: SubscriptionPlan =
+    subscription?.status === 'ACTIVE' ? subscription.plan : 'FREE'
+
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
   const [curriculum, setCurriculum] = useState<CourseCurriculum | null>(null)
   const [curriculumBusy, setCurriculumBusy] = useState(false)
@@ -251,6 +263,16 @@ export default function App() {
   const selectedEnrollment = useMemo(
     () => enrollments.find(item => item.courseId === selectedCourseId) ?? null,
     [enrollments, selectedCourseId]
+  )
+
+  const selectedCourseEntitled = useMemo(
+    () =>
+      selectedCourse
+        ? user?.role === 'ADMIN' ||
+          PLAN_RANK[effectivePlan] >=
+            PLAN_RANK[selectedCourse.requiredPlan]
+        : false,
+    [selectedCourse, effectivePlan, user?.role]
   )
 
   useEffect(() => {
@@ -437,6 +459,23 @@ export default function App() {
   }
 
   async function enroll(courseId: number) {
+    const course = courses.find(item => item.id === courseId)
+
+    if (
+      course &&
+      user?.role !== 'ADMIN' &&
+      PLAN_RANK[effectivePlan] < PLAN_RANK[course.requiredPlan]
+    ) {
+      setMessage(
+        `A trilha ${course.title} requer o plano ${course.requiredPlan}. Faça upgrade para começar.`
+      )
+      document.getElementById('plans')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+      return
+    }
+
     if (!token) {
       setMessage('Crie sua conta ou entre para começar uma trilha.')
       document.getElementById('auth')?.scrollIntoView({ behavior: 'smooth' })
@@ -481,7 +520,9 @@ export default function App() {
 
     try {
       const data = await api<CourseCurriculum>(
-        `/api/v1/courses/${course.id}/curriculum`
+        `/api/v1/courses/${course.id}/curriculum`,
+        {},
+        token
       )
       setCurriculum(data)
 
@@ -506,6 +547,17 @@ export default function App() {
   async function downloadResource(resource: LessonResource) {
     if (!token) {
       setMessage('Entre na sua conta para baixar os materiais da aula.')
+      return
+    }
+
+    if (!selectedCourseEntitled) {
+      setMessage(
+        `Este material requer o plano ${selectedCourse?.requiredPlan ?? 'adequado'}.`
+      )
+      document.getElementById('plans')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
       return
     }
 
@@ -618,6 +670,13 @@ export default function App() {
       return
     }
 
+    if (!selectedCourseEntitled) {
+      setMessage(
+        `Esta aula requer o plano ${selectedCourse?.requiredPlan ?? 'adequado'}.`
+      )
+      return
+    }
+
     if (!selectedCourseId || !enrolledIds.has(selectedCourseId)) {
       setMessage('Matricule-se nesta trilha antes de concluir uma aula.')
       return
@@ -708,7 +767,7 @@ export default function App() {
         localStorage.removeItem(PLAN_KEY)
         localStorage.removeItem(BILLING_KEY)
         setMessage(
-          subscription?.plan === 'FREE'
+          effectivePlan === 'FREE'
             ? 'Free já é o seu plano atual.'
             : 'Downgrade para Free será implementado junto ao ciclo de cancelamento da assinatura.'
         )
@@ -773,8 +832,8 @@ export default function App() {
           )}
           {user && <span className="user-chip">{user.name}</span>}
           {user && subscription && (
-            <span className={`plan-chip ${subscription.plan.toLowerCase()}`}>
-              {subscription.plan}
+            <span className={`plan-chip ${effectivePlan.toLowerCase()}`}>
+              {effectivePlan}
             </span>
           )}
           <div className="xp">
@@ -919,7 +978,7 @@ export default function App() {
 
         <PricingSection
           supportEmail={platformSettings.supportEmail}
-          currentPlan={subscription?.plan ?? null}
+          currentPlan={user ? effectivePlan : null}
           pendingPlan={subscription?.pendingUpgrade?.requestedPlan ?? null}
           onSelectPlan={handlePlanSelect}
         />
@@ -951,10 +1010,14 @@ export default function App() {
               const enrollment = enrollments.find(
                 item => item.courseId === course.id
               )
+              const entitled =
+                user?.role === 'ADMIN' ||
+                PLAN_RANK[effectivePlan] >=
+                  PLAN_RANK[course.requiredPlan]
 
               return (
                 <article
-                  className={`course-card ${enrolled ? 'enrolled' : ''}`}
+                  className={`course-card ${enrolled ? 'enrolled' : ''} ${!entitled ? 'locked' : ''}`}
                   key={course.id}
                   onClick={() => openCourse(course)}
                 >
@@ -962,11 +1025,16 @@ export default function App() {
                     <div className="icon">
                       <Icon size={24} />
                     </div>
-                    {enrolled && (
-                      <span className="enrolled-badge">
-                        <CheckCircle2 size={14} /> Em andamento
+                    <div className="course-badges">
+                      <span className={`course-plan-badge ${course.requiredPlan.toLowerCase()}`}>
+                        {course.requiredPlan}
                       </span>
-                    )}
+                      {enrolled && entitled && (
+                        <span className="enrolled-badge">
+                          <CheckCircle2 size={14} /> Em andamento
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <h4>{course.title}</h4>
@@ -990,7 +1058,12 @@ export default function App() {
                         openCourse(course)
                       }}
                     >
-                      {enrolled ? 'Continuar' : 'Explorar'} <ChevronRight size={15} />
+                      {!entitled
+                        ? `Requer ${course.requiredPlan}`
+                        : enrolled
+                          ? 'Continuar'
+                          : 'Explorar'}{' '}
+                      {!entitled ? <LockKeyhole size={15} /> : <ChevronRight size={15} />}
                     </button>
                   </div>
                 </article>
@@ -1039,7 +1112,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {selectedEnrollment && learningProgress && (
+                {selectedEnrollment && learningProgress && selectedCourseEntitled && (
                   <div className="track-progress">
                     <div className="track-progress-copy">
                       <div>
@@ -1061,7 +1134,37 @@ export default function App() {
                   </div>
                 )}
 
-                {!selectedEnrollment && (
+                {!selectedCourseEntitled && (
+                  <div className="plan-gate">
+                    <div>
+                      <LockKeyhole size={24} />
+                      <div>
+                        <strong>
+                          Conteúdo {selectedCourse.requiredPlan}
+                        </strong>
+                        <span>
+                          Seu plano atual é {effectivePlan}.
+                          Faça upgrade para matricular-se, baixar materiais,
+                          concluir aulas e responder aos quizzes.
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      className="primary"
+                      onClick={() =>
+                        document.getElementById('plans')?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start'
+                        })
+                      }
+                    >
+                      Ver planos
+                    </button>
+                  </div>
+                )}
+
+                {!selectedEnrollment && selectedCourseEntitled && (
                   <div className="start-track">
                     <div>
                       <BookOpen size={24} />
@@ -1146,11 +1249,17 @@ export default function App() {
                                           className="resource-chip"
                                           key={resource.id}
                                           onClick={() => downloadResource(resource)}
-                                          disabled={!user || !selectedEnrollment}
+                                          disabled={
+                                            !user ||
+                                            !selectedEnrollment ||
+                                            !selectedCourseEntitled
+                                          }
                                           title={
-                                            selectedEnrollment
-                                              ? `Baixar ${resource.fileName}`
-                                              : 'Matricule-se para baixar'
+                                            !selectedCourseEntitled
+                                              ? `Requer plano ${selectedCourse.requiredPlan}`
+                                              : selectedEnrollment
+                                                ? `Baixar ${resource.fileName}`
+                                                : 'Matricule-se para baixar'
                                           }
                                         >
                                           <ResourceIcon size={15} />
@@ -1167,7 +1276,7 @@ export default function App() {
                                   </div>
                                 )}
 
-                                {user && token && (
+                                {user && token && selectedCourseEntitled && (
                                   <LessonQuizPanel
                                     token={token}
                                     lessonId={lesson.id}
@@ -1215,7 +1324,8 @@ export default function App() {
                                   completed ||
                                   completing ||
                                   !user ||
-                                  !selectedEnrollment
+                                  !selectedEnrollment ||
+                                  !selectedCourseEntitled
                                 }
                                 onClick={() => completeLesson(lesson.id)}
                               >
