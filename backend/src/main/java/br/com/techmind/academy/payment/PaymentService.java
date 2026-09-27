@@ -145,6 +145,13 @@ public class PaymentService {
         return CheckoutResponse.from(settlementService.settle(payment));
     }
 
+    public List<PaymentHistoryResponse> historyForUser(String email) {
+        return orderRepository.findByUserEmailOrderByCreatedAtDesc(email)
+                .stream()
+                .map(PaymentHistoryResponse::from)
+                .toList();
+    }
+
     public CheckoutResponse orderForUser(
             String email,
             String externalReference
