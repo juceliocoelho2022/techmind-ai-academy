@@ -14,6 +14,7 @@ type AdminUser = {
   name: string
   email: string
   role: 'STUDENT' | 'ADMIN'
+  plan: 'FREE' | 'PRO' | 'CAREER'
   createdAt: string
   enrollments: number
   completedLessons: number
@@ -241,6 +242,7 @@ export default function AdminUsersPanel({
             <tr>
               <th>Usuário</th>
               <th>Papel</th>
+              <th>Plano</th>
               <th>Matrículas</th>
               <th>Aulas concluídas</th>
               <th>XP</th>
@@ -266,6 +268,11 @@ export default function AdminUsersPanel({
                 <td>
                   <span className={`admin-role-badge ${user.role.toLowerCase()}`}>
                     {user.role}
+                  </span>
+                </td>
+                <td>
+                  <span className={`admin-plan-badge ${user.plan.toLowerCase()}`}>
+                    {user.plan}
                   </span>
                 </td>
                 <td>{user.enrollments}</td>
