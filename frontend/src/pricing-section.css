@@ -344,3 +344,23 @@
     height: 46px;
   }
 }
+
+.pricing-badge.account {
+  border-color: #2f8668;
+  background: #0c352a;
+  color: #8defc3;
+}
+
+.pricing-badge.pending {
+  border-color: #80642e;
+  background: #382a0d;
+  color: #f2ce7a;
+}
+
+.pricing-cta:disabled {
+  cursor: default;
+  opacity: .72;
+  border-color: #31495d;
+  background: #0d1f2d;
+  color: #7f96a8;
+}
