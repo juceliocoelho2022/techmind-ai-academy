@@ -1,5 +1,6 @@
 package br.com.techmind.academy.learning;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,10 @@ public class LearningController {
             Authentication authentication,
             @PathVariable Long courseId
     ) {
-        var email = authentication == null ? null : authentication.getName();
+        var email =
+                authentication == null || authentication instanceof AnonymousAuthenticationToken
+                        ? null
+                        : authentication.getName();
         return learningService.curriculum(courseId, email);
     }
 
