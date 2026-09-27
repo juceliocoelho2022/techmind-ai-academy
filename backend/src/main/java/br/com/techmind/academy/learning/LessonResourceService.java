@@ -44,10 +44,11 @@ public class LessonResourceService {
     }
 
     @Transactional(readOnly = true)
-    public List<LessonResourceResponse> list(Long lessonId) {
-        if (!lessonRepository.existsById(lessonId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aula não encontrada");
-        }
+    public List<LessonResourceResponse> list(String email, Long lessonId) {
+        var lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aula não encontrada"));
+
+        entitlementService.requireAccess(email, lesson.getModule().getCourse());
 
         return resourceRepository.findByLessonIdOrderByPositionAsc(lessonId)
                 .stream()
