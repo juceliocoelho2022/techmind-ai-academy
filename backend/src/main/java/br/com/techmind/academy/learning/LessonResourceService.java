@@ -2,6 +2,7 @@ package br.com.techmind.academy.learning;
 
 import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
+import br.com.techmind.academy.subscription.CourseEntitlementService;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
 import org.springframework.core.io.Resource;
@@ -21,6 +22,7 @@ public class LessonResourceService {
     private final LessonResourceStorageService storageService;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final CourseEntitlementService entitlementService;
     private final AdminAuditService auditService;
 
     public LessonResourceService(
@@ -29,6 +31,7 @@ public class LessonResourceService {
             LessonResourceStorageService storageService,
             UserRepository userRepository,
             EnrollmentRepository enrollmentRepository,
+            CourseEntitlementService entitlementService,
             AdminAuditService auditService
     ) {
         this.lessonRepository = lessonRepository;
@@ -36,6 +39,7 @@ public class LessonResourceService {
         this.storageService = storageService;
         this.userRepository = userRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.entitlementService = entitlementService;
         this.auditService = auditService;
     }
 
@@ -104,7 +108,10 @@ public class LessonResourceService {
         var metadata = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Material não encontrado"));
 
-        var courseId = metadata.getLesson().getModule().getCourse().getId();
+        var course = metadata.getLesson().getModule().getCourse();
+        var courseId = course.getId();
+        entitlementService.requireAccess(user, course);
+
         boolean admin = user.getRole() == UserRole.ADMIN;
         boolean enrolled = enrollmentRepository.existsByUserEmailAndCourseId(email, courseId);
 
