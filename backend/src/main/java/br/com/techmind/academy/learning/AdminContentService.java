@@ -5,6 +5,7 @@ import br.com.techmind.academy.course.CourseRepository;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
 import br.com.techmind.academy.quiz.LessonQuizRepository;
 import br.com.techmind.academy.quiz.QuizAttemptRepository;
+import br.com.techmind.academy.settings.PlatformSettingsService;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class AdminContentService {
     private final EnrollmentRepository enrollmentRepository;
     private final LessonQuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
+    private final PlatformSettingsService settingsService;
     private final UserRepository userRepository;
 
     public AdminContentService(
@@ -36,6 +38,7 @@ public class AdminContentService {
             EnrollmentRepository enrollmentRepository,
             LessonQuizRepository quizRepository,
             QuizAttemptRepository quizAttemptRepository,
+            PlatformSettingsService settingsService,
             UserRepository userRepository
     ) {
         this.courseRepository = courseRepository;
@@ -47,6 +50,7 @@ public class AdminContentService {
         this.enrollmentRepository = enrollmentRepository;
         this.quizRepository = quizRepository;
         this.quizAttemptRepository = quizAttemptRepository;
+        this.settingsService = settingsService;
         this.userRepository = userRepository;
     }
 
@@ -184,7 +188,11 @@ public class AdminContentService {
                 .title(request.title().trim())
                 .summary(request.summary().trim())
                 .position(position)
-                .xpReward(request.xpReward() == null ? 10 : request.xpReward())
+                .xpReward(
+                        request.xpReward() == null
+                                ? settingsService.defaultLessonXp()
+                                : request.xpReward()
+                )
                 .build();
 
         return AdminLessonResponse.from(lessonRepository.save(lesson));
