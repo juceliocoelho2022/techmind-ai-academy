@@ -1,6 +1,7 @@
 package br.com.techmind.academy.learning;
 
 import br.com.techmind.academy.course.CourseLevel;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ public record CourseTemplateResponse(
         String category,
         String technology,
         CourseLevel level,
+        SubscriptionPlan requiredPlan,
         String title,
         String slug,
         String description,
