@@ -921,3 +921,38 @@ button:disabled {
     font-size: 0;
   }
 }
+
+.plan-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  padding: 8px 10px;
+  border: 1px solid #2f4c63;
+  border-radius: 999px;
+  background: #0b1c2a;
+  color: #94aabd;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.plan-chip.pro {
+  border-color: #2d7995;
+  background: #0c3448;
+  color: #9cecff;
+}
+
+.plan-chip.career {
+  border-color: #5a50a2;
+  background: #262052;
+  color: #c1b9ff;
+}
+
+@media (max-width: 640px) {
+  .plan-chip {
+    min-width: auto;
+    padding: 8px;
+    font-size: 9px;
+  }
+}

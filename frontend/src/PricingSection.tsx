@@ -12,11 +12,13 @@ import './pricing-section.css'
 
 export type PlanCode = 'FREE' | 'PRO' | 'CAREER' | 'EDUCATION'
 
-type BillingPeriod = 'MONTHLY' | 'ANNUAL'
+export type BillingPeriod = 'MONTHLY' | 'ANNUAL'
 
 type Props = {
   supportEmail: string | null
-  onSelectPlan: (plan: PlanCode) => void
+  currentPlan: 'FREE' | 'PRO' | 'CAREER' | null
+  pendingPlan: 'PRO' | 'CAREER' | null
+  onSelectPlan: (plan: PlanCode, billingPeriod: BillingPeriod) => void
 }
 
 type Plan = {
@@ -91,7 +93,12 @@ function money(value: number) {
   }).format(value)
 }
 
-export default function PricingSection({ supportEmail, onSelectPlan }: Props) {
+export default function PricingSection({
+  supportEmail,
+  currentPlan,
+  pendingPlan,
+  onSelectPlan
+}: Props) {
   const [period, setPeriod] = useState<BillingPeriod>('MONTHLY')
 
   const annualSavings = useMemo(() => {
@@ -152,6 +159,12 @@ export default function PricingSection({ supportEmail, onSelectPlan }: Props) {
           const currentPrice = annual ? plan.annualPrice : plan.monthlyPrice
           const monthlyEquivalent =
             annual && plan.annualPrice > 0 ? plan.annualPrice / 12 : currentPrice
+          const planRank = { FREE: 0, PRO: 1, CAREER: 2 }
+          const currentRank = currentPlan ? planRank[currentPlan] : -1
+          const current = currentPlan === plan.code
+          const pending = pendingPlan === plan.code
+          const includedByHigherPlan =
+            currentPlan !== null && currentRank > planRank[plan.code]
 
           return (
             <article
@@ -164,7 +177,13 @@ export default function PricingSection({ supportEmail, onSelectPlan }: Props) {
                 .join(' ')}
               key={plan.code}
             >
-              {plan.badge && <span className="pricing-badge">{plan.badge}</span>}
+              {current ? (
+                <span className="pricing-badge account">Plano atual</span>
+              ) : pending ? (
+                <span className="pricing-badge pending">Upgrade pendente</span>
+              ) : (
+                plan.badge && <span className="pricing-badge">{plan.badge}</span>
+              )}
 
               <div className="pricing-icon">
                 <Icon size={23} />
@@ -211,13 +230,20 @@ export default function PricingSection({ supportEmail, onSelectPlan }: Props) {
               <button
                 type="button"
                 className={plan.code === 'PRO' ? 'primary pricing-cta' : 'pricing-cta'}
-                onClick={() => onSelectPlan(plan.code)}
+                disabled={current || pending || includedByHigherPlan}
+                onClick={() => onSelectPlan(plan.code, period)}
               >
-                {plan.code === 'FREE'
-                  ? 'Começar grátis'
-                  : plan.code === 'PRO'
-                    ? 'Escolher Pro'
-                    : 'Escolher Career'}
+                {current
+                  ? 'Seu plano atual'
+                  : pending
+                    ? 'Upgrade solicitado'
+                    : includedByHigherPlan
+                      ? `Incluído no ${currentPlan}`
+                      : plan.code === 'FREE'
+                        ? 'Começar grátis'
+                        : plan.code === 'PRO'
+                          ? 'Escolher Pro'
+                          : 'Escolher Career'}
               </button>
             </article>
           )
@@ -252,7 +278,7 @@ export default function PricingSection({ supportEmail, onSelectPlan }: Props) {
         <button
           type="button"
           className="pricing-b2b-button"
-          onClick={() => onSelectPlan('EDUCATION')}
+          onClick={() => onSelectPlan('EDUCATION', period)}
         >
           <Sparkles size={16} />
           {supportEmail ? 'Falar com a TechMind' : 'Tenho interesse'}
@@ -260,9 +286,9 @@ export default function PricingSection({ supportEmail, onSelectPlan }: Props) {
       </div>
 
       <p className="pricing-note">
-        Os valores exibidos são os planos comerciais atuais da TechMind. O
-        checkout e a cobrança recorrente serão conectados ao módulo de
-        assinaturas.
+        Os valores exibidos são os planos comerciais atuais da TechMind.
+        Solicitações Pro/Career ficam pendentes até aprovação. A confirmação
+        automática será conectada ao gateway de pagamento.
       </p>
     </section>
   )
