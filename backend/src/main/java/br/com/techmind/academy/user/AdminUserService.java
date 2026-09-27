@@ -2,6 +2,7 @@ package br.com.techmind.academy.user;
 
 import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
+import br.com.techmind.academy.subscription.SubscriptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +15,18 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final SubscriptionService subscriptionService;
     private final AdminAuditService auditService;
 
     public AdminUserService(
             UserRepository userRepository,
             EnrollmentRepository enrollmentRepository,
+            SubscriptionService subscriptionService,
             AdminAuditService auditService
     ) {
         this.userRepository = userRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.subscriptionService = subscriptionService;
         this.auditService = auditService;
     }
 
@@ -99,6 +103,7 @@ public class AdminUserService {
                 user.getName(),
                 user.getEmail(),
                 user.getRole().name(),
+                subscriptionService.currentPlanForUser(user.getId()).name(),
                 user.getCreatedAt(),
                 enrollments.size(),
                 completedLessons,
