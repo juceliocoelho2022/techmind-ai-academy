@@ -84,11 +84,11 @@ public class CourseTemplateCatalogService {
                         .position(moduleTemplate.position())
                         .build();
 
-                module = moduleRepository.save(module);
+                var savedModule = moduleRepository.save(module);
 
                 var lessons = moduleTemplate.lessons().stream()
                         .map(lessonTemplate -> Lesson.builder()
-                                .module(module)
+                                .module(savedModule)
                                 .slug(lessonTemplate.slug())
                                 .title(lessonTemplate.title())
                                 .summary(lessonTemplate.summary())
