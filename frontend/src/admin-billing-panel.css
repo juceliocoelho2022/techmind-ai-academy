@@ -1,0 +1,252 @@
+.admin-billing-panel {
+  margin-top: 14px;
+}
+
+.admin-billing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.admin-billing-header h2 {
+  margin: 4px 0 5px;
+  font-size: 22px;
+}
+
+.admin-billing-header p {
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.admin-billing-header > button {
+  border: 1px solid #2d698e;
+  border-radius: 9px;
+  background: #0a2639;
+  color: #9ee6f8;
+  padding: 9px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.admin-billing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.admin-billing-grid article {
+  display: flex;
+  gap: 10px;
+  border: 1px solid #1d405a;
+  border-radius: 12px;
+  padding: 13px;
+  background: #081b2b;
+}
+
+.admin-billing-grid article > svg {
+  color: #69dff7;
+  flex: 0 0 auto;
+}
+
+.admin-billing-grid article > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-billing-grid span {
+  color: #728da1;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.admin-billing-grid strong {
+  margin-top: 3px;
+  font-size: 17px;
+}
+
+.admin-billing-grid small {
+  margin-top: 3px;
+  color: #6e8799;
+  font-size: 9px;
+}
+
+.admin-billing-columns {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+}
+
+.admin-billing-section {
+  border: 1px solid #1c3d55;
+  border-radius: 12px;
+  background: #071827;
+  padding: 13px;
+  min-width: 0;
+}
+
+.admin-billing-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-billing-section-title > svg {
+  color: #69dff7;
+}
+
+.admin-billing-section-title > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-billing-section-title strong {
+  font-size: 12px;
+}
+
+.admin-billing-section-title span {
+  color: #6e8799;
+  font-size: 9px;
+}
+
+.admin-billing-table-wrap {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.admin-billing-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+.admin-billing-table-wrap th,
+.admin-billing-table-wrap td {
+  padding: 8px 7px;
+  border-bottom: 1px solid #17364b;
+  text-align: left;
+  font-size: 9px;
+}
+
+.admin-billing-table-wrap th {
+  color: #708b9d;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.admin-billing-table-wrap td:first-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-billing-table-wrap td:first-child small {
+  color: #6d8799;
+}
+
+.admin-billing-status {
+  display: inline-flex;
+  border: 1px solid #38516a;
+  border-radius: 999px;
+  padding: 4px 6px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.admin-billing-status.paid {
+  border-color: #31715e;
+  background: #0d3027;
+  color: #89e7bd;
+}
+
+.admin-billing-status.pending,
+.admin-billing-status.checkout_created,
+.admin-billing-status.created {
+  border-color: #7a632d;
+  background: #34290e;
+  color: #efcb76;
+}
+
+.admin-billing-status.failed,
+.admin-billing-status.canceled {
+  border-color: #734257;
+  background: #321721;
+  color: #e99ab4;
+}
+
+.admin-expiration-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-expiration-list article {
+  border: 1px solid #1c3b50;
+  border-radius: 9px;
+  background: #091b29;
+  padding: 9px;
+  display: grid;
+  grid-template-columns: 1.2fr .8fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-expiration-list article > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-expiration-list strong {
+  font-size: 10px;
+}
+
+.admin-expiration-list span,
+.admin-expiration-list time {
+  color: #718a9c;
+  font-size: 8px;
+}
+
+.admin-billing-empty {
+  margin-top: 10px;
+  padding: 22px;
+  border: 1px dashed #27485f;
+  border-radius: 10px;
+  text-align: center;
+  color: #728b9e;
+  font-size: 10px;
+}
+
+.admin-billing-disclaimer {
+  margin: 11px 2px 0;
+  color: #657e91;
+  font-size: 9px;
+}
+
+@media (max-width: 1000px) {
+  .admin-billing-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-billing-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-billing-header {
+    flex-direction: column;
+  }
+
+  .admin-billing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-expiration-list article {
+    grid-template-columns: 1fr;
+  }
+}
