@@ -18,6 +18,7 @@ type Course = {
   category: string
   technology: string
   level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  requiredPlan: 'FREE' | 'PRO' | 'CAREER'
   totalLessons: number
 }
 
@@ -125,6 +126,7 @@ export default function AdminStructureManager({
           category: String(data.get('category') ?? ''),
           technology: String(data.get('technology') ?? ''),
           level: String(data.get('level') ?? 'INTERMEDIATE'),
+          requiredPlan: String(data.get('requiredPlan') ?? 'FREE'),
           totalLessons: Number(data.get('totalLessons') ?? 0)
         }
 
@@ -489,6 +491,18 @@ function StructureForm({
           </select>
         </label>
         <label>
+          <span>Plano mínimo *</span>
+          <select
+            name="requiredPlan"
+            defaultValue={mode === 'EDIT' ? course?.requiredPlan ?? 'FREE' : 'FREE'}
+            required
+          >
+            <option value="FREE">FREE</option>
+            <option value="PRO">PRO</option>
+            <option value="CAREER">CAREER</option>
+          </select>
+        </label>
+        <label>
           <span>Total planejado de aulas</span>
           <input
             name="totalLessons"
@@ -588,7 +602,7 @@ function StructureForm({
           name="xpReward"
           type="number"
           min={0}
-          defaultValue={mode === 'EDIT' ? lesson?.xpReward ?? 10 : 10}
+          defaultValue={mode === 'EDIT' ? lesson?.xpReward ?? defaultLessonXp : defaultLessonXp}
         />
       </label>
       <StructureSaveButton busy={busy} />
