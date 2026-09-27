@@ -917,7 +917,7 @@ export default function App() {
       setMessage(
         plan === 'FREE'
           ? 'Plano Free selecionado. Crie sua conta para começar.'
-          : `Plano ${plan === 'PRO' ? 'Pro' : 'Career'} selecionado. Crie sua conta e o upgrade será solicitado automaticamente.`
+          : `Plano ${plan === 'PRO' ? 'Pro' : 'Career'} selecionado. Crie sua conta e o checkout será aberto automaticamente.`
       )
     }
 
