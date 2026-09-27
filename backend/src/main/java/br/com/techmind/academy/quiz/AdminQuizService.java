@@ -1,5 +1,6 @@
 package br.com.techmind.academy.quiz;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.learning.LessonRepository;
 import br.com.techmind.academy.settings.PlatformSettingsService;
 import br.com.techmind.academy.user.UserRepository;
@@ -18,6 +19,7 @@ public class AdminQuizService {
     private final LessonQuizRepository quizRepository;
     private final QuizAttemptRepository attemptRepository;
     private final PlatformSettingsService settingsService;
+    private final AdminAuditService auditService;
     private final UserRepository userRepository;
 
     public AdminQuizService(
@@ -25,12 +27,14 @@ public class AdminQuizService {
             LessonQuizRepository quizRepository,
             QuizAttemptRepository attemptRepository,
             PlatformSettingsService settingsService,
+            AdminAuditService auditService,
             UserRepository userRepository
     ) {
         this.lessonRepository = lessonRepository;
         this.quizRepository = quizRepository;
         this.attemptRepository = attemptRepository;
         this.settingsService = settingsService;
+        this.auditService = auditService;
         this.userRepository = userRepository;
     }
 
@@ -115,6 +119,13 @@ public class AdminQuizService {
         quiz.replaceQuestions(questions);
         var saved = quizRepository.saveAndFlush(quiz);
         initializeOptions(saved);
+        auditService.record(
+                email,
+                existing == null ? "CREATE" : "UPDATE",
+                "QUIZ",
+                saved.getId(),
+                "Quiz configurado para a aula " + lessonId
+        );
 
         return AdminQuizResponse.from(saved);
     }
@@ -134,6 +145,13 @@ public class AdminQuizService {
         }
 
         quizRepository.delete(quiz);
+        auditService.record(
+                email,
+                "DELETE",
+                "QUIZ",
+                quiz.getId(),
+                "Quiz removido da aula " + lessonId
+        );
     }
 
     private void validateQuestions(AdminQuizRequest request) {

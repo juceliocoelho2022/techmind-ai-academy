@@ -1,5 +1,6 @@
 package br.com.techmind.academy.user;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.enrollment.Enrollment;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
@@ -19,6 +20,7 @@ class AdminUserServiceTest {
     void shouldListUsersWithEnrollmentActivity() {
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -61,7 +63,7 @@ class AdminUserServiceTest {
         when(enrollmentRepository.findByUserIdOrderByStartedAtDesc(1L))
                 .thenReturn(List.of());
 
-        var service = new AdminUserService(userRepository, enrollmentRepository);
+        var service = new AdminUserService(userRepository, enrollmentRepository, auditService);
 
         var users = service.list("admin@techmind.dev");
 
@@ -83,6 +85,7 @@ class AdminUserServiceTest {
     void shouldPromoteStudentToAdmin() {
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -109,7 +112,7 @@ class AdminUserServiceTest {
         when(enrollmentRepository.findByUserIdOrderByStartedAtDesc(2L))
                 .thenReturn(List.of());
 
-        var service = new AdminUserService(userRepository, enrollmentRepository);
+        var service = new AdminUserService(userRepository, enrollmentRepository, auditService);
 
         var response = service.updateRole(
                 "admin@techmind.dev",
@@ -120,12 +123,20 @@ class AdminUserServiceTest {
         assertThat(student.getRole()).isEqualTo(UserRole.ADMIN);
         assertThat(response.role()).isEqualTo("ADMIN");
         verify(userRepository).save(student);
+        verify(auditService).record(
+                eq("admin@techmind.dev"),
+                eq("ROLE_CHANGE"),
+                eq("USER"),
+                eq(2L),
+                contains("STUDENT")
+        );
     }
 
     @Test
     void shouldPreventAdminFromDemotingOwnAccount() {
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -140,7 +151,7 @@ class AdminUserServiceTest {
         when(userRepository.findById(1L))
                 .thenReturn(Optional.of(admin));
 
-        var service = new AdminUserService(userRepository, enrollmentRepository);
+        var service = new AdminUserService(userRepository, enrollmentRepository, auditService);
 
         assertThatThrownBy(() ->
                 service.updateRole(

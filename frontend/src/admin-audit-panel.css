@@ -1,0 +1,139 @@
+.admin-audit-panel {
+  margin: 14px 0;
+}
+
+.audit-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.audit-header h2 {
+  margin: 4px 0 5px;
+  font-size: 20px;
+}
+
+.audit-header p {
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+
+.audit-header button {
+  border: 1px solid #2b6385;
+  background: #0a2639;
+  color: #9ee6f8;
+  border-radius: 9px;
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.audit-header button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.audit-empty {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #7893a8;
+}
+
+.audit-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 430px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.audit-list article {
+  border: 1px solid #1d4059;
+  background: #081b2a;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  gap: 9px;
+}
+
+.audit-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: #0e3046;
+  border: 1px solid #2c6687;
+  color: #69ddf5;
+}
+
+.audit-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.audit-content > div {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.audit-content > div strong {
+  color: #eafaff;
+  font-size: 11px;
+}
+
+.audit-content > div span {
+  border: 1px solid #2a465a;
+  color: #829cae;
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-size: 8px;
+}
+
+.audit-content p {
+  margin: 5px 0;
+  color: #9eb3c1;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.audit-content small {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #637f93;
+  font-size: 8px;
+}
+
+.audit-content small span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 650px) {
+  .audit-header {
+    flex-direction: column;
+  }
+
+  .audit-header button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .audit-content small {
+    flex-direction: column;
+  }
+}

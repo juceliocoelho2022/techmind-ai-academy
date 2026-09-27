@@ -1,5 +1,6 @@
 package br.com.techmind.academy.learning;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseRepository;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
@@ -26,6 +27,7 @@ public class AdminContentService {
     private final LessonQuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
     private final PlatformSettingsService settingsService;
+    private final AdminAuditService auditService;
     private final UserRepository userRepository;
 
     public AdminContentService(
@@ -39,6 +41,7 @@ public class AdminContentService {
             LessonQuizRepository quizRepository,
             QuizAttemptRepository quizAttemptRepository,
             PlatformSettingsService settingsService,
+            AdminAuditService auditService,
             UserRepository userRepository
     ) {
         this.courseRepository = courseRepository;
@@ -51,6 +54,7 @@ public class AdminContentService {
         this.quizRepository = quizRepository;
         this.quizAttemptRepository = quizAttemptRepository;
         this.settingsService = settingsService;
+        this.auditService = auditService;
         this.userRepository = userRepository;
     }
 
@@ -73,7 +77,9 @@ public class AdminContentService {
                 .totalLessons(request.totalLessons() == null ? 0 : request.totalLessons())
                 .build();
 
-        return AdminCourseResponse.from(courseRepository.save(course));
+        var saved = courseRepository.save(course);
+        auditService.record(email, "CREATE", "COURSE", saved.getId(), "Trilha criada: " + saved.getTitle());
+        return AdminCourseResponse.from(saved);
     }
 
     @Transactional
@@ -97,7 +103,9 @@ public class AdminContentService {
         course.setLevel(request.level());
         course.setTotalLessons(request.totalLessons() == null ? course.getTotalLessons() : request.totalLessons());
 
-        return AdminCourseResponse.from(courseRepository.save(course));
+        var saved = courseRepository.save(course);
+        auditService.record(email, "UPDATE", "COURSE", saved.getId(), "Trilha atualizada: " + saved.getTitle());
+        return AdminCourseResponse.from(saved);
     }
 
     @Transactional
@@ -117,6 +125,7 @@ public class AdminContentService {
         lessons.forEach(this::deleteLessonResources);
 
         courseRepository.delete(course);
+        auditService.record(email, "DELETE", "COURSE", courseId, "Trilha removida: " + course.getTitle());
     }
 
     @Transactional
@@ -137,7 +146,9 @@ public class AdminContentService {
                 .position(position)
                 .build();
 
-        return AdminModuleResponse.from(moduleRepository.save(module));
+        var saved = moduleRepository.save(module);
+        auditService.record(email, "CREATE", "MODULE", saved.getId(), "Módulo criado: " + saved.getTitle());
+        return AdminModuleResponse.from(saved);
     }
 
     @Transactional
@@ -153,7 +164,9 @@ public class AdminContentService {
         module.setDescription(request.description().trim());
         module.setPosition(position);
 
-        return AdminModuleResponse.from(moduleRepository.save(module));
+        var saved = moduleRepository.save(module);
+        auditService.record(email, "UPDATE", "MODULE", saved.getId(), "Módulo atualizado: " + saved.getTitle());
+        return AdminModuleResponse.from(saved);
     }
 
     @Transactional
@@ -167,6 +180,7 @@ public class AdminContentService {
         lessons.forEach(this::deleteLessonResources);
 
         moduleRepository.delete(module);
+        auditService.record(email, "DELETE", "MODULE", moduleId, "Módulo removido: " + module.getTitle());
     }
 
     @Transactional
@@ -195,7 +209,9 @@ public class AdminContentService {
                 )
                 .build();
 
-        return AdminLessonResponse.from(lessonRepository.save(lesson));
+        var saved = lessonRepository.save(lesson);
+        auditService.record(email, "CREATE", "LESSON", saved.getId(), "Aula criada: " + saved.getTitle());
+        return AdminLessonResponse.from(saved);
     }
 
     @Transactional
@@ -216,7 +232,9 @@ public class AdminContentService {
         lesson.setPosition(position);
         lesson.setXpReward(request.xpReward() == null ? lesson.getXpReward() : request.xpReward());
 
-        return AdminLessonResponse.from(lessonRepository.save(lesson));
+        var saved = lessonRepository.save(lesson);
+        auditService.record(email, "UPDATE", "LESSON", saved.getId(), "Aula atualizada: " + saved.getTitle());
+        return AdminLessonResponse.from(saved);
     }
 
     @Transactional
@@ -233,6 +251,7 @@ public class AdminContentService {
 
         deleteLessonResources(lesson);
         lessonRepository.delete(lesson);
+        auditService.record(email, "DELETE", "LESSON", lessonId, "Aula removida: " + lesson.getTitle());
     }
 
     private void ensureLessonsWithoutActivity(java.util.List<Lesson> lessons) {

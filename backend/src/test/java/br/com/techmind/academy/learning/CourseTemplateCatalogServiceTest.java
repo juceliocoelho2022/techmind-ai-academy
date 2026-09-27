@@ -1,5 +1,6 @@
 package br.com.techmind.academy.learning;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseLevel;
 import br.com.techmind.academy.course.CourseRepository;
@@ -22,6 +23,7 @@ class CourseTemplateCatalogServiceTest {
         var moduleRepository = mock(CourseModuleRepository.class);
         var lessonRepository = mock(LessonRepository.class);
         var userRepository = mock(UserRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -48,6 +50,7 @@ class CourseTemplateCatalogServiceTest {
                 courseRepository,
                 moduleRepository,
                 lessonRepository,
+                auditService,
                 userRepository
         );
 
@@ -72,6 +75,13 @@ class CourseTemplateCatalogServiceTest {
 
         verify(moduleRepository, times(4)).save(any(CourseModule.class));
         verify(lessonRepository, times(4)).saveAll(any());
+        verify(auditService).record(
+                eq("admin@techmind.dev"),
+                eq("TEMPLATE_INSTANTIATE"),
+                eq("COURSE"),
+                eq(100L),
+                contains("java-backend")
+        );
     }
 
     @Test
@@ -80,6 +90,7 @@ class CourseTemplateCatalogServiceTest {
         var moduleRepository = mock(CourseModuleRepository.class);
         var lessonRepository = mock(LessonRepository.class);
         var userRepository = mock(UserRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -96,6 +107,7 @@ class CourseTemplateCatalogServiceTest {
                 courseRepository,
                 moduleRepository,
                 lessonRepository,
+                auditService,
                 userRepository
         );
 
@@ -117,6 +129,7 @@ class CourseTemplateCatalogServiceTest {
         var moduleRepository = mock(CourseModuleRepository.class);
         var lessonRepository = mock(LessonRepository.class);
         var userRepository = mock(UserRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -137,6 +150,7 @@ class CourseTemplateCatalogServiceTest {
                 courseRepository,
                 moduleRepository,
                 lessonRepository,
+                auditService,
                 userRepository
         );
 

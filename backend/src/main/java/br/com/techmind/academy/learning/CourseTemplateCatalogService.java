@@ -1,5 +1,6 @@
 package br.com.techmind.academy.learning;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseLevel;
 import br.com.techmind.academy.course.CourseRepository;
@@ -19,17 +20,20 @@ public class CourseTemplateCatalogService {
     private final CourseRepository courseRepository;
     private final CourseModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
+    private final AdminAuditService auditService;
     private final UserRepository userRepository;
 
     public CourseTemplateCatalogService(
             CourseRepository courseRepository,
             CourseModuleRepository moduleRepository,
             LessonRepository lessonRepository,
+            AdminAuditService auditService,
             UserRepository userRepository
     ) {
         this.courseRepository = courseRepository;
         this.moduleRepository = moduleRepository;
         this.lessonRepository = lessonRepository;
+        this.auditService = auditService;
         this.userRepository = userRepository;
     }
 
@@ -100,6 +104,14 @@ public class CourseTemplateCatalogService {
                 lessonRepository.saveAll(lessons);
             }
         }
+
+        auditService.record(
+                email,
+                "TEMPLATE_INSTANTIATE",
+                "COURSE",
+                savedCourse.getId(),
+                "Trilha criada pelo template " + templateKey + ": " + savedCourse.getTitle()
+        );
 
         return AdminCourseResponse.from(savedCourse);
     }

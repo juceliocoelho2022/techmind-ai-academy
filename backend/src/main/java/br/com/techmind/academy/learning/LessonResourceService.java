@@ -1,5 +1,6 @@
 package br.com.techmind.academy.learning;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
@@ -20,19 +21,22 @@ public class LessonResourceService {
     private final LessonResourceStorageService storageService;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final AdminAuditService auditService;
 
     public LessonResourceService(
             LessonRepository lessonRepository,
             LessonResourceRepository resourceRepository,
             LessonResourceStorageService storageService,
             UserRepository userRepository,
-            EnrollmentRepository enrollmentRepository
+            EnrollmentRepository enrollmentRepository,
+            AdminAuditService auditService
     ) {
         this.lessonRepository = lessonRepository;
         this.resourceRepository = resourceRepository;
         this.storageService = storageService;
         this.userRepository = userRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +81,15 @@ public class LessonResourceService {
                     .position(nextPosition)
                     .build();
 
-            return LessonResourceResponse.from(resourceRepository.save(resource));
+            var saved = resourceRepository.save(resource);
+            auditService.record(
+                    email,
+                    "UPLOAD",
+                    "LESSON_RESOURCE",
+                    saved.getId(),
+                    "Material " + saved.getType().name() + " enviado para a aula " + lessonId
+            );
+            return LessonResourceResponse.from(saved);
         } catch (RuntimeException exception) {
             storageService.delete(lessonId, stored.storedFileName());
             throw exception;
@@ -116,6 +128,13 @@ public class LessonResourceService {
 
         storageService.delete(metadata.getLesson().getId(), metadata.getStoredFileName());
         resourceRepository.delete(metadata);
+        auditService.record(
+                email,
+                "DELETE",
+                "LESSON_RESOURCE",
+                resourceId,
+                "Material removido da aula " + metadata.getLesson().getId()
+        );
     }
 
     private void requireAdmin(String email) {

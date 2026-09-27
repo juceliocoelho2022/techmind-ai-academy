@@ -1,5 +1,6 @@
 package br.com.techmind.academy.settings;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.user.User;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
@@ -17,11 +18,12 @@ class PlatformSettingsServiceTest {
     void shouldReturnPublicSettings() {
         var repository = mock(PlatformSettingsRepository.class);
         var userRepository = mock(UserRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         when(repository.findById((short) 1))
                 .thenReturn(Optional.of(settings()));
 
-        var service = new PlatformSettingsService(repository, userRepository);
+        var service = new PlatformSettingsService(repository, auditService, userRepository);
 
         var response = service.publicView();
 
@@ -34,6 +36,7 @@ class PlatformSettingsServiceTest {
     void shouldAllowAdminToUpdateSettings() {
         var repository = mock(PlatformSettingsRepository.class);
         var userRepository = mock(UserRepository.class);
+        var auditService = mock(AdminAuditService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -51,7 +54,7 @@ class PlatformSettingsServiceTest {
                 .thenReturn(Optional.of(settings));
         when(repository.save(settings)).thenReturn(settings);
 
-        var service = new PlatformSettingsService(repository, userRepository);
+        var service = new PlatformSettingsService(repository, auditService, userRepository);
 
         var response = service.update(
                 "admin@techmind.dev",
@@ -72,6 +75,13 @@ class PlatformSettingsServiceTest {
         assertThat(response.defaultQuizPassingScore()).isEqualTo(80);
         assertThat(response.defaultQuizXp()).isEqualTo(100);
         verify(repository).save(settings);
+        verify(auditService).record(
+                eq("admin@techmind.dev"),
+                eq("SETTINGS_UPDATE"),
+                eq("PLATFORM_SETTINGS"),
+                eq((short) 1),
+                contains("atualizadas")
+        );
     }
 
     private PlatformSettings settings() {

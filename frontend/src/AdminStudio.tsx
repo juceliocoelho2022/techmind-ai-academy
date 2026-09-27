@@ -29,6 +29,7 @@ import AdminUsersPanel from './AdminUsersPanel'
 import AdminCourseTemplateCatalog from './AdminCourseTemplateCatalog'
 import AdminAnalyticsPanel from './AdminAnalyticsPanel'
 import AdminSettingsPanel, { type PlatformSettings } from './AdminSettingsPanel'
+import AdminAuditPanel from './AdminAuditPanel'
 
 type Course = {
   id: number
@@ -605,6 +606,11 @@ export default function AdminStudio({
         </section>
 
         {message && <div className="admin-notice">{message}</div>}
+
+        <AdminAuditPanel
+          token={token}
+          onMessage={setMessage}
+        />
 
         <AdminCourseTemplateCatalog
           token={token}
