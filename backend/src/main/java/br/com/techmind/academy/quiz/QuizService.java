@@ -56,6 +56,7 @@ public class QuizService {
         var user = findUser(email);
         var quiz = findActiveQuiz(lessonId);
 
+        entitlementService.requireAccess(user, quiz.getLesson().getModule().getCourse());
         requireEnrollmentOrAdmin(user.getRole(), email, quiz);
 
         return attemptRepository.findByQuizIdAndUserEmailOrderBySubmittedAtDesc(quiz.getId(), email)
