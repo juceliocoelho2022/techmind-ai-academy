@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import './admin-studio.css'
 import AdminStructureManager from './AdminStructureManager'
+import AdminQuizEditor from './AdminQuizEditor'
 
 type Course = {
   id: number
@@ -535,6 +536,12 @@ export default function AdminStudio({
           selectedModule={selectedModule}
           selectedLesson={selectedLesson}
           onChanged={refreshStructure}
+          onMessage={setMessage}
+        />
+
+        <AdminQuizEditor
+          token={token}
+          lesson={selectedLesson}
           onMessage={setMessage}
         />
 
