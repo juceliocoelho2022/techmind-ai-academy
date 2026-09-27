@@ -7,6 +7,7 @@ public record AdminUserResponse(
         String name,
         String email,
         String role,
+        String plan,
         OffsetDateTime createdAt,
         int enrollments,
         int completedLessons,
