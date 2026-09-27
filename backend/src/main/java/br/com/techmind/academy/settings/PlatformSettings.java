@@ -26,6 +26,9 @@ public class PlatformSettings {
     @Column(name = "support_email", length = 200)
     private String supportEmail;
 
+    @Column(name = "whatsapp_number", length = 30)
+    private String whatsappNumber;
+
     @Column(name = "registration_enabled", nullable = false)
     private Boolean registrationEnabled;
 
