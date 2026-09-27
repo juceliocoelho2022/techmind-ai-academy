@@ -1,5 +1,6 @@
 package br.com.techmind.academy.learning;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +25,8 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
             @Param("email") String email,
             @Param("courseId") Long courseId
     );
+
+    @EntityGraph(attributePaths = {"lesson", "lesson.module", "lesson.module.course"})
+    @Query("select lp from LessonProgress lp")
+    List<LessonProgress> findAllForAnalytics();
 }
