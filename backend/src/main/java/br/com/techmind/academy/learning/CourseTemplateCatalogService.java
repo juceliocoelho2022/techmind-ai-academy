@@ -501,6 +501,44 @@ public class CourseTemplateCatalogService {
                         )
                 ),
                 template(
+                        "career-interviews",
+                        "Carreira",
+                        "Entrevistas Tech",
+                        CourseLevel.INTERMEDIATE,
+                        SubscriptionPlan.CAREER,
+                        "Preparação para Entrevistas Tech",
+                        "entrevistas-tech",
+                        "Preparação prática para processos seletivos com currículo, portfólio, entrevistas técnicas, comportamento e plano Job Ready.",
+                        module(
+                                1,
+                                "Posicionamento Profissional",
+                                "Organize sua apresentação profissional para vagas de tecnologia.",
+                                lesson(1, "curriculo-tech", "Currículo Tech", "Estrutura, palavras-chave, projetos e resultados para processos seletivos.", 20),
+                                lesson(2, "linkedin-github", "LinkedIn, GitHub e Portfólio", "Posicionamento, evidências técnicas e apresentação dos projetos.", 20)
+                        ),
+                        module(
+                                2,
+                                "Entrevista Técnica",
+                                "Treine fundamentos e decisões técnicas com clareza.",
+                                lesson(1, "java-spring-interview", "Java e Spring em Entrevistas", "Fundamentos, arquitetura, APIs, testes e perguntas recorrentes.", 25),
+                                lesson(2, "sql-cloud-interview", "SQL, APIs e Cloud", "Consultas, modelagem, REST, Docker, AWS e trade-offs.", 25)
+                        ),
+                        module(
+                                3,
+                                "Comportamental",
+                                "Transforme experiências em respostas objetivas e convincentes.",
+                                lesson(1, "metodo-star", "Método STAR", "Situação, tarefa, ação e resultado aplicados a entrevistas.", 20),
+                                lesson(2, "comunicacao-decisoes", "Comunicação e Decisões Técnicas", "Explique escolhas, trade-offs, erros e aprendizados.", 25)
+                        ),
+                        module(
+                                4,
+                                "Job Ready",
+                                "Consolide preparação e próximos passos.",
+                                lesson(1, "simulado-completo", "Simulado Completo", "Entrevista técnica e comportamental com roteiro estruturado.", 35),
+                                lesson(2, "plano-30-dias", "Plano Job Ready de 30 Dias", "Plano de estudo, candidaturas, revisão e acompanhamento.", 30)
+                        )
+                ),
+                template(
                         "android-kotlin",
                         "Mobile",
                         "Kotlin / Android",
