@@ -50,15 +50,23 @@ public class AdminQuizService {
 
         validateQuestions(request);
 
-        var quiz = quizRepository.findByLessonId(lessonId)
-                .orElseGet(() -> LessonQuiz.builder().lesson(lesson).build());
+        var existing = quizRepository.findByLessonId(lessonId).orElse(null);
 
-        if (quiz.getId() != null && attemptRepository.existsByQuizId(quiz.getId())) {
+        if (existing != null && attemptRepository.existsByQuizId(existing.getId())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Este quiz já possui tentativas e sua estrutura está protegida"
             );
         }
+
+        if (existing != null) {
+            quizRepository.delete(existing);
+            quizRepository.flush();
+        }
+
+        var quiz = LessonQuiz.builder()
+                .lesson(lesson)
+                .build();
 
         quiz.setTitle(request.title().trim());
         quiz.setDescription(normalize(request.description()));
