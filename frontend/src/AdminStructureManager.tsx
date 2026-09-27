@@ -254,7 +254,7 @@ export default function AdminStructureManager({
           : 'Editar aula'
 
   return (
-    <section className="admin-card structure-manager">
+    <section className="admin-card structure-manager" id="admin-structure">
       <div className="structure-manager-heading">
         <div>
           <span className="admin-kicker">ESTRUTURA ACADÊMICA</span>
