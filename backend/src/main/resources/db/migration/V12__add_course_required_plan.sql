@@ -17,6 +17,10 @@ WHERE slug IN (
     'data-ai'
 );
 
+UPDATE courses
+SET required_plan = 'CAREER'
+WHERE slug = 'entrevistas-tech';
+
 ALTER TABLE courses
     ADD CONSTRAINT ck_course_required_plan
     CHECK (required_plan IN ('FREE', 'PRO', 'CAREER'));
