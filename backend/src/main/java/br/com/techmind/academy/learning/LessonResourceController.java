@@ -20,8 +20,11 @@ public class LessonResourceController {
     }
 
     @GetMapping("/api/v1/lessons/{lessonId}/resources")
-    public List<LessonResourceResponse> list(@PathVariable Long lessonId) {
-        return resourceService.list(lessonId);
+    public List<LessonResourceResponse> list(
+            Authentication authentication,
+            @PathVariable Long lessonId
+    ) {
+        return resourceService.list(authentication.getName(), lessonId);
     }
 
     @GetMapping("/api/v1/learning/resources/{resourceId}/download")
