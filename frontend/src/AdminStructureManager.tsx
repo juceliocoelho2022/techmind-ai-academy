@@ -15,6 +15,9 @@ type Course = {
   slug: string
   title: string
   description: string
+  category: string
+  technology: string
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
   totalLessons: number
 }
 
@@ -117,6 +120,9 @@ export default function AdminStructureManager({
           slug: String(data.get('slug') ?? ''),
           title: String(data.get('title') ?? ''),
           description: String(data.get('description') ?? ''),
+          category: String(data.get('category') ?? ''),
+          technology: String(data.get('technology') ?? ''),
+          level: String(data.get('level') ?? 'INTERMEDIATE'),
           totalLessons: Number(data.get('totalLessons') ?? 0)
         }
 
@@ -444,6 +450,38 @@ function StructureForm({
             rows={3}
             required
           />
+        </label>
+        <label>
+          <span>Categoria *</span>
+          <input
+            name="category"
+            defaultValue={mode === 'EDIT' ? course?.category : ''}
+            placeholder="Ex.: Backend"
+            maxLength={80}
+            required
+          />
+        </label>
+        <label>
+          <span>Tecnologia *</span>
+          <input
+            name="technology"
+            defaultValue={mode === 'EDIT' ? course?.technology : ''}
+            placeholder="Ex.: Java"
+            maxLength={80}
+            required
+          />
+        </label>
+        <label>
+          <span>Nível *</span>
+          <select
+            name="level"
+            defaultValue={mode === 'EDIT' ? course?.level ?? 'INTERMEDIATE' : 'BEGINNER'}
+            required
+          >
+            <option value="BEGINNER">Iniciante</option>
+            <option value="INTERMEDIATE">Intermediário</option>
+            <option value="ADVANCED">Avançado</option>
+          </select>
         </label>
         <label>
           <span>Total planejado de aulas</span>
