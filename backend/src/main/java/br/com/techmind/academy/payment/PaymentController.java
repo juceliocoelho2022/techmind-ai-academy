@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
@@ -12,6 +14,11 @@ public class PaymentController {
 
     public PaymentController(PaymentService service) {
         this.service = service;
+    }
+
+    @GetMapping("/me")
+    public List<PaymentHistoryResponse> history(Authentication authentication) {
+        return service.historyForUser(authentication.getName());
     }
 
     @PostMapping("/checkout")

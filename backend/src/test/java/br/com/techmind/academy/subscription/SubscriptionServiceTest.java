@@ -140,6 +140,8 @@ class SubscriptionServiceTest {
         assertThat(subscription.getPlanCode()).isEqualTo(SubscriptionPlan.CAREER);
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         assertThat(subscription.getSource()).isEqualTo(SubscriptionSource.MANUAL);
+        assertThat(subscription.getBillingPeriod()).isEqualTo(BillingPeriod.ANNUAL);
+        assertThat(subscription.getEndsAt()).isNotNull();
         assertThat(request.getStatus()).isEqualTo(UpgradeRequestStatus.APPROVED);
         assertThat(response.currentPlan()).isEqualTo(SubscriptionPlan.CAREER);
 
@@ -149,6 +151,62 @@ class SubscriptionServiceTest {
                 eq("USER_SUBSCRIPTION"),
                 eq(50L),
                 contains("CAREER")
+        );
+    }
+
+    @Test
+    void shouldCancelPremiumSubscriptionImmediately() {
+        var userRepository = mock(UserRepository.class);
+        var subscriptionRepository = mock(UserSubscriptionRepository.class);
+        var requestRepository = mock(SubscriptionUpgradeRequestRepository.class);
+        var auditService = mock(AdminAuditService.class);
+
+        var user = student();
+        var subscription = UserSubscription.builder()
+                .id(80L)
+                .user(user)
+                .planCode(SubscriptionPlan.PRO)
+                .status(SubscriptionStatus.ACTIVE)
+                .source(SubscriptionSource.PAYMENT)
+                .billingPeriod(BillingPeriod.MONTHLY)
+                .endsAt(java.time.OffsetDateTime.now().plusDays(20))
+                .build();
+
+        when(userRepository.findByEmail(user.getEmail()))
+                .thenReturn(Optional.of(user));
+        when(subscriptionRepository.findByUserId(user.getId()))
+                .thenReturn(Optional.of(subscription));
+        when(subscriptionRepository.save(subscription))
+                .thenReturn(subscription);
+        when(requestRepository.findFirstByUserIdAndStatusOrderByCreatedAtDesc(
+                user.getId(),
+                UpgradeRequestStatus.PENDING
+        )).thenReturn(Optional.empty());
+
+        var service = new SubscriptionService(
+                userRepository,
+                subscriptionRepository,
+                requestRepository,
+                auditService
+        );
+
+        var response = service.cancelCurrent(
+                user.getEmail(),
+                new CancelSubscriptionRequest(true)
+        );
+
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.CANCELED);
+        assertThat(subscription.getCanceledAt()).isNotNull();
+        assertThat(response.status()).isEqualTo(SubscriptionStatus.CANCELED);
+        assertThat(service.currentPlanForUser(user.getId()))
+                .isEqualTo(SubscriptionPlan.FREE);
+
+        verify(auditService).record(
+                eq(user.getEmail()),
+                eq("SUBSCRIPTION_CANCELED_BY_USER"),
+                eq("USER_SUBSCRIPTION"),
+                eq(80L),
+                contains("premium")
         );
     }
 

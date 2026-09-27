@@ -1,0 +1,255 @@
+.billing-center {
+  margin: 0 0 48px;
+  padding: 22px;
+  border: 1px solid #203e57;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(52, 128, 191, .10), transparent 38%),
+    rgba(8, 22, 36, .92);
+}
+
+.billing-center-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.billing-center-heading h3 {
+  margin: 5px 0 6px;
+  font-size: 26px;
+}
+
+.billing-center-heading p {
+  margin: 0;
+  color: #8ea2b7;
+}
+
+.billing-current-plan {
+  min-width: 130px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #32516a;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #0a1d2c;
+}
+
+.billing-current-plan.pro {
+  border-color: #2d7995;
+  color: #9cecff;
+}
+
+.billing-current-plan.career {
+  border-color: #5d52a4;
+  color: #c5bdff;
+}
+
+.billing-current-plan div {
+  display: flex;
+  flex-direction: column;
+}
+
+.billing-current-plan span {
+  color: #7f96aa;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.billing-account-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.billing-account-grid article {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #1e3d54;
+  border-radius: 13px;
+  padding: 14px;
+  background: #081a29;
+}
+
+.billing-account-grid article > svg {
+  color: #64dff7;
+}
+
+.billing-account-grid article div {
+  display: flex;
+  flex-direction: column;
+}
+
+.billing-account-grid span {
+  color: #7893a7;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.billing-account-grid strong {
+  margin-top: 3px;
+  font-size: 14px;
+}
+
+.billing-account-grid small {
+  margin-top: 3px;
+  color: #7893a7;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.billing-cancel-row {
+  margin-top: 14px;
+  padding: 13px 14px;
+  border: 1px solid #57384a;
+  border-radius: 12px;
+  background: #24131c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.billing-cancel-row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.billing-cancel-row strong {
+  font-size: 12px;
+}
+
+.billing-cancel-row span {
+  margin-top: 3px;
+  color: #b28da0;
+  font-size: 10px;
+}
+
+.billing-cancel-row button {
+  border: 1px solid #7c4861;
+  border-radius: 9px;
+  background: #351724;
+  color: #f0a7c0;
+  padding: 9px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.billing-history {
+  margin-top: 17px;
+}
+
+.billing-history-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.billing-history-title > svg {
+  color: #64dff7;
+}
+
+.billing-history-title > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.billing-history-title strong {
+  font-size: 13px;
+}
+
+.billing-history-title span {
+  color: #718a9e;
+  font-size: 9px;
+}
+
+.billing-empty {
+  margin-top: 10px;
+  border: 1px dashed #28485e;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  color: #738c9f;
+  font-size: 11px;
+}
+
+.billing-table-wrap {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.billing-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+.billing-table-wrap th,
+.billing-table-wrap td {
+  border-bottom: 1px solid #17364b;
+  padding: 9px 8px;
+  text-align: left;
+  font-size: 10px;
+}
+
+.billing-table-wrap th {
+  color: #6f8a9e;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.billing-status {
+  display: inline-flex;
+  border: 1px solid #395069;
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.billing-status.paid {
+  border-color: #32725f;
+  background: #0d3028;
+  color: #88e8bf;
+}
+
+.billing-status.pending,
+.billing-status.checkout_created,
+.billing-status.created {
+  border-color: #7b642d;
+  background: #33290f;
+  color: #f0cd7b;
+}
+
+.billing-status.failed,
+.billing-status.canceled {
+  border-color: #784357;
+  background: #321721;
+  color: #eda1b8;
+}
+
+@media (max-width: 800px) {
+  .billing-center-heading,
+  .billing-cancel-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .billing-account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .billing-current-plan {
+    width: fit-content;
+  }
+
+  .billing-cancel-row button {
+    justify-content: center;
+  }
+}

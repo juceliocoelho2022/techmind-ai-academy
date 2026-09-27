@@ -178,3 +178,87 @@ A v1.2 pode adicionar:
 - cupons;
 - preço fundador;
 - métricas de MRR/ARR.
+
+
+## Billing Center v1.2
+
+A TechMind agora possui duas visões financeiras.
+
+### Aluno — Minha assinatura
+
+Endpoint de histórico:
+
+```text
+GET /api/v1/payments/me
+```
+
+O aluno visualiza:
+
+- plano e status;
+- origem da ativação;
+- período mensal/anual;
+- validade do acesso;
+- histórico de ordens e pagamentos.
+
+Cancelamento self-service:
+
+```text
+POST /api/v1/subscriptions/cancel
+```
+
+Payload:
+
+```json
+{
+  "confirmImmediate": true
+}
+```
+
+Nesta versão o cancelamento encerra o entitlement premium imediatamente. Ele não executa estorno automático no provedor.
+
+### Admin — Financeiro
+
+Endpoint:
+
+```text
+GET /api/v1/admin/billing
+```
+
+Indicadores:
+
+- receita bruta confirmada em ordens `PAID`;
+- receita paga nos últimos 30 dias;
+- acessos premium ativos;
+- assinaturas pagas ativas;
+- mix PRO / CAREER;
+- vencimentos em 7 e 30 dias;
+- pagamentos recentes;
+- próximos vencimentos.
+
+### MRR e ARR equivalentes
+
+Como a v1.2 ainda não possui renovação automática, os indicadores exibidos não representam receita recorrente contratada.
+
+`MRR equivalente` normaliza apenas assinaturas com `source=PAYMENT` e status ativo:
+
+- mensal: preço mensal integral;
+- anual: preço anual dividido por 12.
+
+`ARR equivalente` = MRR equivalente × 12.
+
+Acesso manual administrativo não entra nesses equivalentes.
+
+### Lifecycle
+
+A migration:
+
+```text
+V14__extend_subscription_billing.sql
+```
+
+adiciona a `user_subscriptions`:
+
+- `billing_period`;
+- `canceled_at`.
+
+O backfill tenta preservar o período real usando o pagamento ou upgrade aprovado mais recente antes de usar MONTHLY como fallback.

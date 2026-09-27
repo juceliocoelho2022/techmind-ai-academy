@@ -35,6 +35,10 @@ public class UserSubscription {
     @Column(nullable = false, length = 20)
     private SubscriptionSource source;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "billing_period", length = 20)
+    private BillingPeriod billingPeriod;
+
     @Column(name = "started_at", nullable = false)
     private OffsetDateTime startedAt;
 
@@ -43,6 +47,9 @@ public class UserSubscription {
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    @Column(name = "canceled_at")
+    private OffsetDateTime canceledAt;
 
     @PrePersist
     void prePersist() {

@@ -9,8 +9,10 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface PaymentOrderRepository extends JpaRepository<PaymentOrder, Long> {
@@ -27,6 +29,28 @@ public interface PaymentOrderRepository extends JpaRepository<PaymentOrder, Long
 
     @EntityGraph(attributePaths = "user")
     Optional<PaymentOrder> findByProviderPaymentId(String providerPaymentId);
+
+    @EntityGraph(attributePaths = "user")
+    List<PaymentOrder> findByUserEmailOrderByCreatedAtDesc(String email);
+
+    @EntityGraph(attributePaths = "user")
+    List<PaymentOrder> findTop50ByOrderByCreatedAtDesc();
+
+    long countByStatus(PaymentOrderStatus status);
+
+    @Query("select sum(p.amount) from PaymentOrder p where p.status = :status")
+    BigDecimal sumAmountByStatus(@Param("status") PaymentOrderStatus status);
+
+    @Query("""
+            select sum(p.amount)
+            from PaymentOrder p
+            where p.status = :status
+              and p.paidAt >= :since
+            """)
+    BigDecimal sumAmountByStatusSince(
+            @Param("status") PaymentOrderStatus status,
+            @Param("since") OffsetDateTime since
+    );
 
     @EntityGraph(attributePaths = "user")
     Optional<PaymentOrder> findFirstByUserIdAndPlanCodeAndBillingPeriodAndStatusInAndCreatedAtAfterOrderByCreatedAtDesc(

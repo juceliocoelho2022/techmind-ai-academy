@@ -7,8 +7,10 @@ public record MySubscriptionResponse(
         SubscriptionPlan plan,
         SubscriptionStatus status,
         SubscriptionSource source,
+        BillingPeriod billingPeriod,
         OffsetDateTime startedAt,
         OffsetDateTime endsAt,
+        OffsetDateTime canceledAt,
         PendingUpgrade pendingUpgrade
 ) {
     public record PendingUpgrade(
