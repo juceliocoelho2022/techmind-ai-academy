@@ -29,6 +29,8 @@ class PlatformSettingsServiceTest {
 
         assertThat(response.academyName()).isEqualTo("TechMind AI Academy");
         assertThat(response.tagline()).isEqualTo("Do conteúdo ao projeto real.");
+        assertThat(response.supportEmail()).isEqualTo("suporttecmind@gmail.com");
+        assertThat(response.whatsappNumber()).isEqualTo("+5511911625945");
         assertThat(response.registrationEnabled()).isTrue();
     }
 
@@ -62,6 +64,7 @@ class PlatformSettingsServiceTest {
                         "Nova Academy",
                         "Aprenda construindo.",
                         "suporte@example.com",
+                        "+5511999999999",
                         false,
                         20,
                         80,
@@ -71,6 +74,7 @@ class PlatformSettingsServiceTest {
 
         assertThat(response.academyName()).isEqualTo("Nova Academy");
         assertThat(response.registrationEnabled()).isFalse();
+        assertThat(response.whatsappNumber()).isEqualTo("+5511999999999");
         assertThat(response.defaultLessonXp()).isEqualTo(20);
         assertThat(response.defaultQuizPassingScore()).isEqualTo(80);
         assertThat(response.defaultQuizXp()).isEqualTo(100);
@@ -89,7 +93,8 @@ class PlatformSettingsServiceTest {
                 .id((short) 1)
                 .academyName("TechMind AI Academy")
                 .tagline("Do conteúdo ao projeto real.")
-                .supportEmail(null)
+                .supportEmail("suporttecmind@gmail.com")
+                .whatsappNumber("+5511911625945")
                 .registrationEnabled(true)
                 .defaultLessonXp(10)
                 .defaultQuizPassingScore(70)
