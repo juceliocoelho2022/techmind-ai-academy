@@ -74,6 +74,7 @@ public class AdminContentService {
                 .category(request.category().trim())
                 .technology(request.technology().trim())
                 .level(request.level())
+                .requiredPlan(request.requiredPlan())
                 .totalLessons(request.totalLessons() == null ? 0 : request.totalLessons())
                 .build();
 
@@ -101,6 +102,7 @@ public class AdminContentService {
         course.setCategory(request.category().trim());
         course.setTechnology(request.technology().trim());
         course.setLevel(request.level());
+        course.setRequiredPlan(request.requiredPlan());
         course.setTotalLessons(request.totalLessons() == null ? course.getTotalLessons() : request.totalLessons());
 
         var saved = courseRepository.save(course);
