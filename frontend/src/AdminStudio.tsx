@@ -26,6 +26,7 @@ import './admin-studio.css'
 import AdminStructureManager from './AdminStructureManager'
 import AdminQuizEditor from './AdminQuizEditor'
 import AdminUsersPanel from './AdminUsersPanel'
+import AdminCourseTemplateCatalog from './AdminCourseTemplateCatalog'
 
 type Course = {
   id: number
@@ -350,6 +351,14 @@ export default function AdminStudio({
     await loadCurriculum(nextCourseId, false)
   }
 
+  async function handleTemplateCreated(course: Course) {
+    const updatedCourses = await request<Course[]>('/api/v1/courses', token)
+    onCoursesChanged(updatedCourses)
+    setSelectedCourseId(course.id)
+    setSelectedModuleId(null)
+    setSelectedLessonId(null)
+  }
+
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!selectedLesson) {
@@ -487,7 +496,7 @@ export default function AdminStudio({
           </button>
           <button
             className={activeSection === 'courses' ? 'active' : ''}
-            onClick={() => navigateTo('courses', 'admin-structure')}
+            onClick={() => navigateTo('courses', 'admin-course-catalog')}
           >
             <BookOpen size={19} /> Trilhas
           </button>
@@ -598,6 +607,12 @@ export default function AdminStudio({
         </section>
 
         {message && <div className="admin-notice">{message}</div>}
+
+        <AdminCourseTemplateCatalog
+          token={token}
+          onCreated={handleTemplateCreated}
+          onMessage={setMessage}
+        />
 
         <AdminStructureManager
           token={token}
