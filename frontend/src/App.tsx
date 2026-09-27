@@ -137,6 +137,18 @@ type PublicPlatformSettings = {
   registrationEnabled: boolean
 }
 
+type CheckoutResponse = {
+  orderId: number
+  externalReference: string
+  plan: 'PRO' | 'CAREER'
+  billingPeriod: BillingPeriod
+  amount: number
+  currency: string
+  status: 'CREATED' | 'CHECKOUT_CREATED' | 'PENDING' | 'PAID' | 'FAILED' | 'CANCELED'
+  provider: 'MERCADO_PAGO'
+  checkoutUrl: string | null
+}
+
 type MySubscription = {
   userId: number
   plan: SubscriptionPlan
@@ -219,6 +231,8 @@ export default function App() {
   const [message, setMessage] = useState('')
   const [adminMode, setAdminMode] = useState(false)
   const [subscription, setSubscription] = useState<MySubscription | null>(null)
+  const [checkoutBusyPlan, setCheckoutBusyPlan] =
+    useState<'PRO' | 'CAREER' | null>(null)
   const [platformSettings, setPlatformSettings] = useState<PublicPlatformSettings>(
     DEFAULT_PLATFORM_SETTINGS
   )
@@ -321,6 +335,69 @@ export default function App() {
   }, [token])
 
   useEffect(() => {
+    if (!token) return
+
+    const params = new URLSearchParams(window.location.search)
+    const paymentId = params.get('payment_id')
+    const paymentResult = params.get('payment_result')
+
+    if (!paymentResult) return
+
+    async function reconcileReturn() {
+      if (!paymentId) {
+        setMessage(
+          paymentResult === 'failure'
+            ? 'Pagamento não concluído. Seu plano não foi alterado.'
+            : 'Pagamento ainda não confirmado. Aguarde a atualização do Mercado Pago.'
+        )
+        window.history.replaceState({}, document.title, window.location.pathname)
+        return
+      }
+
+      try {
+        const order = await api<CheckoutResponse>(
+          `/api/v1/payments/reconcile/${encodeURIComponent(paymentId)}`,
+          { method: 'POST' },
+          token
+        )
+
+        const updatedSubscription = await api<MySubscription>(
+          '/api/v1/subscriptions/me',
+          {},
+          token
+        )
+
+        setSubscription(updatedSubscription)
+
+        if (order.status === 'PAID') {
+          setMessage(
+            `Pagamento aprovado. Plano ${order.plan === 'PRO' ? 'Pro' : 'Career'} ativado com sucesso.`
+          )
+        } else if (order.status === 'PENDING') {
+          setMessage(
+            'Pagamento recebido, mas ainda está pendente de confirmação no Mercado Pago.'
+          )
+        } else {
+          setMessage(
+            'O pagamento não foi aprovado. Seu plano atual foi mantido.'
+          )
+        }
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível confirmar o retorno do pagamento.'
+        )
+      } finally {
+        setCheckoutBusyPlan(null)
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }
+    }
+
+    void reconcileReturn()
+  }, [token])
+
+  useEffect(() => {
     if (!selectedCourseId || !token || !enrolledIds.has(selectedCourseId)) {
       setLearningProgress(null)
       return
@@ -382,6 +459,58 @@ export default function App() {
     }
   }
 
+  async function startCheckout(
+    activeToken: string,
+    plan: 'PRO' | 'CAREER',
+    billingPeriod: BillingPeriod,
+    afterAuthentication = false
+  ) {
+    setCheckoutBusyPlan(plan)
+
+    try {
+      const checkout = await api<CheckoutResponse>(
+        '/api/v1/payments/checkout',
+        {
+          method: 'POST',
+          body: JSON.stringify({ plan, billingPeriod })
+        },
+        activeToken
+      )
+
+      localStorage.removeItem(PLAN_KEY)
+      localStorage.removeItem(BILLING_KEY)
+
+      if (!checkout.checkoutUrl) {
+        throw new Error('Checkout criado sem URL de pagamento.')
+      }
+
+      setMessage(
+        afterAuthentication
+          ? `Conta pronta. Abrindo o checkout do plano ${plan === 'PRO' ? 'Pro' : 'Career'}...`
+          : `Abrindo o checkout seguro do plano ${plan === 'PRO' ? 'Pro' : 'Career'}...`
+      )
+
+      window.location.assign(checkout.checkoutUrl)
+    } catch (error) {
+      setCheckoutBusyPlan(null)
+
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível iniciar o checkout.'
+
+      if (message.includes('HTTP 503') && message.includes('Mercado Pago')) {
+        await requestUpgrade(
+          activeToken,
+          plan,
+          billingPeriod,
+          afterAuthentication
+        )
+        return
+      }
+
+      setMessage(message)
+    }
+  }
+
   async function saveSession(response: AuthResponse) {
     localStorage.setItem(TOKEN_KEY, response.accessToken)
     setToken(response.accessToken)
@@ -392,7 +521,7 @@ export default function App() {
       (localStorage.getItem(BILLING_KEY) as BillingPeriod | null) ?? 'MONTHLY'
 
     if (selectedPlan === 'PRO' || selectedPlan === 'CAREER') {
-      await requestUpgrade(
+      await startCheckout(
         response.accessToken,
         selectedPlan,
         selectedBilling,
@@ -774,7 +903,7 @@ export default function App() {
         return
       }
 
-      await requestUpgrade(token, plan, billingPeriod)
+      await startCheckout(token, plan, billingPeriod)
       return
     }
 
@@ -980,6 +1109,7 @@ export default function App() {
           supportEmail={platformSettings.supportEmail}
           currentPlan={user ? effectivePlan : null}
           pendingPlan={subscription?.pendingUpgrade?.requestedPlan ?? null}
+          processingPlan={checkoutBusyPlan}
           onSelectPlan={handlePlanSelect}
         />
 
