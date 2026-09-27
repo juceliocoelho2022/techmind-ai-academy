@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import AdminStudio from './AdminStudio'
 import LessonQuizPanel from './LessonQuizPanel'
+import BillingCenter from './BillingCenter'
 import PricingSection, {
   type BillingPeriod,
   type PlanCode
@@ -154,8 +155,10 @@ type MySubscription = {
   plan: SubscriptionPlan
   status: 'ACTIVE' | 'CANCELED' | 'PAST_DUE'
   source: 'FREE' | 'MANUAL' | 'PAYMENT'
+  billingPeriod: BillingPeriod | null
   startedAt: string
   endsAt: string | null
+  canceledAt: string | null
   pendingUpgrade: {
     id: number
     requestedPlan: 'PRO' | 'CAREER'
@@ -898,7 +901,7 @@ export default function App() {
         setMessage(
           effectivePlan === 'FREE'
             ? 'Free já é o seu plano atual.'
-            : 'Downgrade para Free será implementado junto ao ciclo de cancelamento da assinatura.'
+            : 'Use Minha assinatura para encerrar o plano premium e voltar ao acesso FREE.'
         )
         return
       }
@@ -1112,6 +1115,15 @@ export default function App() {
           processingPlan={checkoutBusyPlan}
           onSelectPlan={handlePlanSelect}
         />
+
+        {user && token && subscription && (
+          <BillingCenter
+            token={token}
+            subscription={subscription}
+            onChanged={setSubscription}
+            onMessage={setMessage}
+          />
+        )}
 
         <section>
           <div className="section-head">
