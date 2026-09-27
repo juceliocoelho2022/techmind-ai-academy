@@ -73,12 +73,12 @@ public class CourseTemplateCatalogService {
                 .totalLessons(template.totalLessons())
                 .build();
 
-        course = courseRepository.save(course);
+        var savedCourse = courseRepository.save(course);
 
         if (Boolean.TRUE.equals(request.createStructure())) {
             for (var moduleTemplate : template.modules()) {
                 var module = CourseModule.builder()
-                        .course(course)
+                        .course(savedCourse)
                         .title(moduleTemplate.title())
                         .description(moduleTemplate.description())
                         .position(moduleTemplate.position())
@@ -101,7 +101,7 @@ public class CourseTemplateCatalogService {
             }
         }
 
-        return AdminCourseResponse.from(course);
+        return AdminCourseResponse.from(savedCourse);
     }
 
     private List<CourseTemplateResponse> templates() {
