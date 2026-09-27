@@ -6,6 +6,18 @@ type Props = {
   whatsappNumber: string | null
 }
 
+function gmailComposeHref(email: string) {
+  const params = new URLSearchParams({
+    view: 'cm',
+    fs: '1',
+    to: email,
+    su: 'Suporte TechMind AI Academy',
+    body: 'Olá! Preciso de ajuda com a TechMind AI Academy.'
+  })
+
+  return `https://mail.google.com/mail/?${params.toString()}`
+}
+
 function whatsappHref(number: string) {
   const digits = number.replace(/\D/g, '')
   const message = encodeURIComponent(
@@ -56,9 +68,9 @@ export default function SupportContactSection({
         {supportEmail && (
           <a
             className="support-contact-card"
-            href={`mailto:${supportEmail}?subject=${encodeURIComponent(
-              'Suporte TechMind AI Academy'
-            )}`}
+            href={gmailComposeHref(supportEmail)}
+            target="_blank"
+            rel="noreferrer"
           >
             <Mail size={21} />
             <div>
