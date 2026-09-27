@@ -44,3 +44,7 @@ yarn-error.log*
 *.key
 *.p12
 *.jks
+
+
+# Local operational backups
+backups/
