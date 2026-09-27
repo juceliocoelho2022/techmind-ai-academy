@@ -19,6 +19,14 @@ public class SubscriptionController {
         return service.current(authentication.getName());
     }
 
+    @PostMapping("/cancel")
+    public MySubscriptionResponse cancel(
+            Authentication authentication,
+            @Valid @RequestBody CancelSubscriptionRequest request
+    ) {
+        return service.cancelCurrent(authentication.getName(), request);
+    }
+
     @PostMapping("/upgrade-requests")
     public MySubscriptionResponse requestUpgrade(
             Authentication authentication,
