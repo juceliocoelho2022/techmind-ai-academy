@@ -39,6 +39,8 @@ type QuizDraft = {
 type Props = {
   token: string
   lesson: Lesson | null
+  defaultPassingScore: number
+  defaultXpReward: number
   onMessage: (message: string) => void
 }
 
@@ -57,32 +59,44 @@ function newQuestion(): QuestionDraft {
   }
 }
 
-function emptyQuiz(lesson?: Lesson | null): QuizDraft {
+function emptyQuiz(
+  lesson: Lesson | null | undefined,
+  defaultPassingScore: number,
+  defaultXpReward: number
+): QuizDraft {
   return {
     title: lesson ? `Quiz — ${lesson.title}` : 'Quiz da aula',
     description: '',
-    passingScore: 70,
-    xpReward: 50,
+    passingScore: defaultPassingScore,
+    xpReward: defaultXpReward,
     active: true,
     questions: [newQuestion()]
   }
 }
 
-export default function AdminQuizEditor({ token, lesson, onMessage }: Props) {
-  const [quiz, setQuiz] = useState<QuizDraft>(() => emptyQuiz(lesson))
+export default function AdminQuizEditor({
+  token,
+  lesson,
+  defaultPassingScore,
+  defaultXpReward,
+  onMessage
+}: Props) {
+  const [quiz, setQuiz] = useState<QuizDraft>(() =>
+    emptyQuiz(lesson, defaultPassingScore, defaultXpReward)
+  )
   const [exists, setExists] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (!lesson) {
-      setQuiz(emptyQuiz(null))
+      setQuiz(emptyQuiz(null, defaultPassingScore, defaultXpReward))
       setExists(false)
       return
     }
 
     void loadQuiz(lesson)
-  }, [lesson?.id])
+  }, [lesson?.id, defaultPassingScore, defaultXpReward])
 
   async function loadQuiz(currentLesson: Lesson) {
     setLoading(true)
@@ -96,7 +110,7 @@ export default function AdminQuizEditor({ token, lesson, onMessage }: Props) {
       )
 
       if (response.status === 404) {
-        setQuiz(emptyQuiz(currentLesson))
+        setQuiz(emptyQuiz(currentLesson, defaultPassingScore, defaultXpReward))
         setExists(false)
         return
       }
@@ -314,7 +328,7 @@ export default function AdminQuizEditor({ token, lesson, onMessage }: Props) {
       }
 
       setExists(false)
-      setQuiz(emptyQuiz(lesson))
+      setQuiz(emptyQuiz(lesson, defaultPassingScore, defaultXpReward))
       onMessage('Quiz removido.')
     } catch (error) {
       onMessage(
