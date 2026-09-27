@@ -1,6 +1,7 @@
 package br.com.techmind.academy.learning;
 
 import br.com.techmind.academy.course.CourseLevel;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +32,9 @@ public record AdminCourseRequest(
 
         @NotNull
         CourseLevel level,
+
+        @NotNull
+        SubscriptionPlan requiredPlan,
 
         @Min(0)
         Integer totalLessons
