@@ -223,6 +223,9 @@ export default function App() {
     DEFAULT_PLATFORM_SETTINGS
   )
 
+  const effectivePlan: SubscriptionPlan =
+    subscription?.status === 'ACTIVE' ? subscription.plan : 'FREE'
+
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
   const [curriculum, setCurriculum] = useState<CourseCurriculum | null>(null)
   const [curriculumBusy, setCurriculumBusy] = useState(false)
@@ -266,10 +269,10 @@ export default function App() {
     () =>
       selectedCourse
         ? user?.role === 'ADMIN' ||
-          PLAN_RANK[subscription?.plan ?? 'FREE'] >=
+          PLAN_RANK[effectivePlan] >=
             PLAN_RANK[selectedCourse.requiredPlan]
         : false,
-    [selectedCourse, subscription?.plan, user?.role]
+    [selectedCourse, effectivePlan, user?.role]
   )
 
   useEffect(() => {
@@ -461,7 +464,7 @@ export default function App() {
     if (
       course &&
       user?.role !== 'ADMIN' &&
-      PLAN_RANK[subscription?.plan ?? 'FREE'] < PLAN_RANK[course.requiredPlan]
+      PLAN_RANK[effectivePlan] < PLAN_RANK[course.requiredPlan]
     ) {
       setMessage(
         `A trilha ${course.title} requer o plano ${course.requiredPlan}. Faça upgrade para começar.`
@@ -764,7 +767,7 @@ export default function App() {
         localStorage.removeItem(PLAN_KEY)
         localStorage.removeItem(BILLING_KEY)
         setMessage(
-          subscription?.plan === 'FREE'
+          effectivePlan === 'FREE'
             ? 'Free já é o seu plano atual.'
             : 'Downgrade para Free será implementado junto ao ciclo de cancelamento da assinatura.'
         )
@@ -829,8 +832,8 @@ export default function App() {
           )}
           {user && <span className="user-chip">{user.name}</span>}
           {user && subscription && (
-            <span className={`plan-chip ${subscription.plan.toLowerCase()}`}>
-              {subscription.plan}
+            <span className={`plan-chip ${effectivePlan.toLowerCase()}`}>
+              {effectivePlan}
             </span>
           )}
           <div className="xp">
@@ -975,7 +978,7 @@ export default function App() {
 
         <PricingSection
           supportEmail={platformSettings.supportEmail}
-          currentPlan={subscription?.plan ?? null}
+          currentPlan={user ? effectivePlan : null}
           pendingPlan={subscription?.pendingUpgrade?.requestedPlan ?? null}
           onSelectPlan={handlePlanSelect}
         />
@@ -1009,7 +1012,7 @@ export default function App() {
               )
               const entitled =
                 user?.role === 'ADMIN' ||
-                PLAN_RANK[subscription?.plan ?? 'FREE'] >=
+                PLAN_RANK[effectivePlan] >=
                   PLAN_RANK[course.requiredPlan]
 
               return (
@@ -1140,7 +1143,7 @@ export default function App() {
                           Conteúdo {selectedCourse.requiredPlan}
                         </strong>
                         <span>
-                          Seu plano atual é {subscription?.plan ?? 'FREE'}.
+                          Seu plano atual é {effectivePlan}.
                           Faça upgrade para matricular-se, baixar materiais,
                           concluir aulas e responder aos quizzes.
                         </span>
