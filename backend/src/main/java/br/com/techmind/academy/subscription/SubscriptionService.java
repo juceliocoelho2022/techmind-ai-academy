@@ -78,7 +78,9 @@ public class SubscriptionService {
             );
         }
 
-        if (request.plan().rank() <= subscription.getPlanCode().rank()) {
+        var effectiveCurrentPlan = currentPlanForUser(user.getId());
+
+        if (request.plan().rank() <= effectiveCurrentPlan.rank()) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "O plano solicitado não é superior ao plano atual"
@@ -135,11 +137,17 @@ public class SubscriptionService {
         var request = pendingRequest(requestId);
         var subscription = ensureFreeSubscription(request.getUser());
 
+        var now = OffsetDateTime.now();
+
         subscription.setPlanCode(request.getRequestedPlan());
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setSource(SubscriptionSource.MANUAL);
-        subscription.setStartedAt(OffsetDateTime.now());
-        subscription.setEndsAt(null);
+        subscription.setStartedAt(now);
+        subscription.setEndsAt(
+                request.getBillingPeriod() == BillingPeriod.ANNUAL
+                        ? now.plusYears(1)
+                        : now.plusMonths(1)
+        );
         subscriptionRepository.save(subscription);
 
         request.setStatus(UpgradeRequestStatus.APPROVED);
