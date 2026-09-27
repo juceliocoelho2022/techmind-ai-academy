@@ -82,6 +82,17 @@ type Props = {
   onExit: () => void
 }
 
+type AdminSection =
+  | 'dashboard'
+  | 'courses'
+  | 'modules'
+  | 'lessons'
+  | 'materials'
+  | 'quiz'
+  | 'users'
+  | 'analytics'
+  | 'settings'
+
 const typeMeta: Record<ResourceType, {
   label: string
   short: string
@@ -179,6 +190,7 @@ export default function AdminStudio({
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [activeSection, setActiveSection] = useState<AdminSection>('dashboard')
 
   useEffect(() => {
     if (!selectedCourseId && courses.length > 0) {
@@ -421,6 +433,18 @@ export default function AdminStudio({
     }
   }
 
+  function navigateTo(section: AdminSection, targetId: string, notice?: string) {
+    setActiveSection(section)
+    if (notice) setMessage(notice)
+
+    window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    })
+  }
+
   function selectCourse(value: string) {
     setSelectedCourseId(Number(value))
     setSelectedModuleId(null)
@@ -449,31 +473,76 @@ export default function AdminStudio({
         </div>
 
         <nav>
-          <button>
+          <button
+            className={activeSection === 'dashboard' ? 'active' : ''}
+            onClick={() => navigateTo('dashboard', 'admin-dashboard')}
+          >
             <LayoutDashboard size={19} /> Dashboard
           </button>
-          <button>
+          <button
+            className={activeSection === 'courses' ? 'active' : ''}
+            onClick={() => navigateTo('courses', 'admin-structure')}
+          >
             <BookOpen size={19} /> Trilhas
           </button>
-          <button>
+          <button
+            className={activeSection === 'modules' ? 'active' : ''}
+            onClick={() => navigateTo('modules', 'admin-structure')}
+          >
             <ListVideo size={19} /> Módulos
           </button>
-          <button className="active">
+          <button
+            className={activeSection === 'lessons' ? 'active' : ''}
+            onClick={() => navigateTo('lessons', 'admin-lessons')}
+          >
             <Play size={19} /> Aulas
           </button>
-          <button>
+          <button
+            className={activeSection === 'materials' ? 'active' : ''}
+            onClick={() => navigateTo('materials', 'admin-materials')}
+          >
             <FileText size={19} /> Materiais
           </button>
-          <button>
+          <button
+            className={activeSection === 'quiz' ? 'active' : ''}
+            onClick={() => navigateTo('quiz', 'admin-quiz')}
+          >
             <Sparkles size={19} /> Quiz
           </button>
-          <button>
+          <button
+            className={activeSection === 'users' ? 'active' : ''}
+            onClick={() =>
+              navigateTo(
+                'users',
+                'admin-users',
+                'Gestão de usuários será a próxima evolução deste módulo.'
+              )
+            }
+          >
             <Users size={19} /> Usuários
           </button>
-          <button>
+          <button
+            className={activeSection === 'analytics' ? 'active' : ''}
+            onClick={() =>
+              navigateTo(
+                'analytics',
+                'admin-analytics',
+                'Analytics já possui a área preparada para os indicadores da plataforma.'
+              )
+            }
+          >
             <BarChart3 size={19} /> Analytics
           </button>
-          <button>
+          <button
+            className={activeSection === 'settings' ? 'active' : ''}
+            onClick={() =>
+              navigateTo(
+                'settings',
+                'admin-settings',
+                'Configurações da plataforma estão preparadas para a próxima etapa.'
+              )
+            }
+          >
             <Settings size={19} /> Configurações
           </button>
         </nav>
@@ -488,7 +557,7 @@ export default function AdminStudio({
       </aside>
 
       <main className="admin-main">
-        <header className="admin-header">
+        <header className="admin-header admin-scroll-target" id="admin-dashboard">
           <div>
             <span className="admin-kicker">TECHMIND CONTENT MANAGEMENT</span>
             <h1>Admin Studio</h1>
@@ -547,7 +616,7 @@ export default function AdminStudio({
 
         <div className="admin-workspace">
           <div className="admin-left-column">
-            <section className="admin-card admin-structure">
+            <section className="admin-card admin-structure admin-scroll-target" id="admin-lessons">
               <div className="admin-step-title">
                 <span>1</span>
                 <div>
@@ -613,7 +682,7 @@ export default function AdminStudio({
               )}
             </section>
 
-            <section className="admin-card admin-editor">
+            <section className="admin-card admin-editor admin-scroll-target" id="admin-materials">
               <div className="admin-step-title">
                 <span>2</span>
                 <div>
@@ -807,6 +876,35 @@ export default function AdminStudio({
             </section>
           </div>
         </div>
+
+        <section className="admin-module-grid">
+          <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-users">
+            <Users size={24} />
+            <div>
+              <span className="admin-kicker">USUÁRIOS</span>
+              <h2>Gestão de usuários</h2>
+              <p>Área reservada para listar alunos, papéis, matrículas e status de acesso.</p>
+            </div>
+          </article>
+
+          <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-analytics">
+            <BarChart3 size={24} />
+            <div>
+              <span className="admin-kicker">ANALYTICS</span>
+              <h2>Indicadores da plataforma</h2>
+              <p>Área preparada para progresso, aprovação em quizzes, XP e desempenho por trilha.</p>
+            </div>
+          </article>
+
+          <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-settings">
+            <Settings size={24} />
+            <div>
+              <span className="admin-kicker">CONFIGURAÇÕES</span>
+              <h2>Configurações do ambiente</h2>
+              <p>Área reservada para preferências, publicação, armazenamento e parâmetros da Academy.</p>
+            </div>
+          </article>
+        </section>
 
         <button className="admin-mobile-exit" onClick={onExit}>
           <LogOut size={17} /> Voltar ao aluno
