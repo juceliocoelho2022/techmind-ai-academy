@@ -27,6 +27,7 @@ import AdminStructureManager from './AdminStructureManager'
 import AdminQuizEditor from './AdminQuizEditor'
 import AdminUsersPanel from './AdminUsersPanel'
 import AdminCourseTemplateCatalog from './AdminCourseTemplateCatalog'
+import AdminAnalyticsPanel from './AdminAnalyticsPanel'
 
 type Course = {
   id: number
@@ -197,6 +198,7 @@ export default function AdminStudio({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard')
   const [usersRefreshKey, setUsersRefreshKey] = useState(0)
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!selectedCourseId && courses.length > 0) {
@@ -450,6 +452,7 @@ export default function AdminStudio({
   function navigateTo(section: AdminSection, targetId: string, notice?: string) {
     setActiveSection(section)
     if (section === 'users') setUsersRefreshKey(value => value + 1)
+    if (section === 'analytics') setAnalyticsRefreshKey(value => value + 1)
     if (notice) setMessage(notice)
 
     window.requestAnimationFrame(() => {
@@ -532,13 +535,7 @@ export default function AdminStudio({
           </button>
           <button
             className={activeSection === 'analytics' ? 'active' : ''}
-            onClick={() =>
-              navigateTo(
-                'analytics',
-                'admin-analytics',
-                'Analytics já possui a área preparada para os indicadores da plataforma.'
-              )
-            }
+            onClick={() => navigateTo('analytics', 'admin-analytics')}
           >
             <BarChart3 size={19} /> Analytics
           </button>
@@ -898,16 +895,13 @@ export default function AdminStudio({
           onMessage={setMessage}
         />
 
-        <section className="admin-module-grid admin-module-grid-secondary">
-          <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-analytics">
-            <BarChart3 size={24} />
-            <div>
-              <span className="admin-kicker">ANALYTICS</span>
-              <h2>Indicadores da plataforma</h2>
-              <p>Área preparada para progresso, aprovação em quizzes, XP e desempenho por trilha.</p>
-            </div>
-          </article>
+        <AdminAnalyticsPanel
+          token={token}
+          refreshKey={analyticsRefreshKey}
+          onMessage={setMessage}
+        />
 
+        <section className="admin-module-grid admin-module-grid-secondary">
           <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-settings">
             <Settings size={24} />
             <div>

@@ -19,6 +19,10 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByUserIdOrderByStartedAtDesc(Long userId);
 
     @EntityGraph(attributePaths = "course")
+    @Query("select e from Enrollment e")
+    List<Enrollment> findAllForAnalytics();
+
+    @EntityGraph(attributePaths = "course")
     Optional<Enrollment> findByUserEmailAndCourseId(String email, Long courseId);
 
     boolean existsByUserEmailAndCourseId(String email, Long courseId);
