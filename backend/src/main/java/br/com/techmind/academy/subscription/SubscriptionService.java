@@ -52,7 +52,7 @@ public class SubscriptionService {
     public MySubscriptionResponse current(String email) {
         var user = findUser(email);
         var subscription = ensureFreeSubscription(user);
-        expirePaidSubscriptionIfNeeded(subscription);
+        expireSubscriptionIfNeeded(subscription);
 
         var pending = upgradeRequestRepository
                 .findFirstByUserIdAndStatusOrderByCreatedAtDesc(
@@ -203,7 +203,7 @@ public class SubscriptionService {
     ) {
         var user = findUser(email);
         var subscription = ensureFreeSubscription(user);
-        expirePaidSubscriptionIfNeeded(subscription);
+        expireSubscriptionIfNeeded(subscription);
 
         if (subscription.getStatus() != SubscriptionStatus.ACTIVE
                 || currentPlanForUser(user.getId()) == SubscriptionPlan.FREE) {
@@ -328,9 +328,9 @@ public class SubscriptionService {
         return subscription;
     }
 
-    private void expirePaidSubscriptionIfNeeded(UserSubscription subscription) {
+    private void expireSubscriptionIfNeeded(UserSubscription subscription) {
         if (subscription.getStatus() == SubscriptionStatus.ACTIVE
-                && subscription.getSource() == SubscriptionSource.PAYMENT
+                && subscription.getPlanCode() != SubscriptionPlan.FREE
                 && subscription.getEndsAt() != null
                 && !subscription.getEndsAt().isAfter(OffsetDateTime.now())) {
             subscription.setStatus(SubscriptionStatus.PAST_DUE);
