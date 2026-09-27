@@ -8,8 +8,8 @@ import java.util.List;
 public record AdminQuizRequest(
         @NotBlank @Size(max = 200) String title,
         @Size(max = 500) String description,
-        @NotNull @Min(0) @Max(100) Integer passingScore,
-        @NotNull @Min(0) Integer xpReward,
+        @Min(0) @Max(100) Integer passingScore,
+        @Min(0) Integer xpReward,
         @NotNull Boolean active,
         @NotEmpty List<@Valid AdminQuizQuestionRequest> questions
 ) {
