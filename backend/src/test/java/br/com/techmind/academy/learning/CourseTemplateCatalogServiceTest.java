@@ -4,6 +4,7 @@ import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseLevel;
 import br.com.techmind.academy.course.CourseRepository;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 import br.com.techmind.academy.user.User;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
@@ -62,6 +63,7 @@ class CourseTemplateCatalogServiceTest {
                         "java-backend-pro",
                         "Trilha completa de Java Backend.",
                         CourseLevel.ADVANCED,
+                        SubscriptionPlan.PRO,
                         true
                 )
         );
@@ -71,6 +73,7 @@ class CourseTemplateCatalogServiceTest {
         assertThat(response.category()).isEqualTo("Backend");
         assertThat(response.technology()).isEqualTo("Java");
         assertThat(response.level()).isEqualTo(CourseLevel.ADVANCED);
+        assertThat(response.requiredPlan()).isEqualTo(SubscriptionPlan.PRO);
         assertThat(response.totalLessons()).isEqualTo(8);
 
         verify(moduleRepository, times(4)).save(any(CourseModule.class));
@@ -119,6 +122,7 @@ class CourseTemplateCatalogServiceTest {
         assertThat(java.category()).isEqualTo("Programação");
         assertThat(java.technology()).isEqualTo("Java");
         assertThat(java.level()).isEqualTo(CourseLevel.BEGINNER);
+        assertThat(java.requiredPlan()).isEqualTo(SubscriptionPlan.FREE);
         assertThat(java.modules()).hasSize(4);
         assertThat(java.totalLessons()).isEqualTo(8);
     }
@@ -162,6 +166,7 @@ class CourseTemplateCatalogServiceTest {
                         "react-custom",
                         "React para um público específico.",
                         CourseLevel.BEGINNER,
+                        SubscriptionPlan.PRO,
                         false
                 )
         );
