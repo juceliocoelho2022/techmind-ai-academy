@@ -1,6 +1,7 @@
 package br.com.techmind.academy.quiz;
 
 import br.com.techmind.academy.learning.LessonRepository;
+import br.com.techmind.academy.settings.PlatformSettingsService;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
 import org.springframework.http.HttpStatus;
@@ -16,17 +17,20 @@ public class AdminQuizService {
     private final LessonRepository lessonRepository;
     private final LessonQuizRepository quizRepository;
     private final QuizAttemptRepository attemptRepository;
+    private final PlatformSettingsService settingsService;
     private final UserRepository userRepository;
 
     public AdminQuizService(
             LessonRepository lessonRepository,
             LessonQuizRepository quizRepository,
             QuizAttemptRepository attemptRepository,
+            PlatformSettingsService settingsService,
             UserRepository userRepository
     ) {
         this.lessonRepository = lessonRepository;
         this.quizRepository = quizRepository;
         this.attemptRepository = attemptRepository;
+        this.settingsService = settingsService;
         this.userRepository = userRepository;
     }
 
@@ -70,8 +74,16 @@ public class AdminQuizService {
 
         quiz.setTitle(request.title().trim());
         quiz.setDescription(normalize(request.description()));
-        quiz.setPassingScore(request.passingScore());
-        quiz.setXpReward(request.xpReward());
+        quiz.setPassingScore(
+                request.passingScore() == null
+                        ? settingsService.defaultQuizPassingScore()
+                        : request.passingScore()
+        );
+        quiz.setXpReward(
+                request.xpReward() == null
+                        ? settingsService.defaultQuizXp()
+                        : request.xpReward()
+        );
         quiz.setActive(request.active());
 
         var questions = new ArrayList<QuizQuestion>();
