@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import {
   BarChart3,
   BookOpen,
+  CreditCard,
   ChevronRight,
   Download,
   Eye,
@@ -28,6 +29,7 @@ import AdminQuizEditor from './AdminQuizEditor'
 import AdminUsersPanel from './AdminUsersPanel'
 import AdminCourseTemplateCatalog from './AdminCourseTemplateCatalog'
 import AdminAnalyticsPanel from './AdminAnalyticsPanel'
+import AdminBillingPanel from './AdminBillingPanel'
 import AdminSettingsPanel, { type PlatformSettings } from './AdminSettingsPanel'
 import AdminSubscriptionRequestsPanel from './AdminSubscriptionRequestsPanel'
 import AdminAuditPanel from './AdminAuditPanel'
@@ -101,6 +103,7 @@ type AdminSection =
   | 'quiz'
   | 'users'
   | 'analytics'
+  | 'billing'
   | 'settings'
 
 const typeMeta: Record<ResourceType, {
@@ -203,6 +206,7 @@ export default function AdminStudio({
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard')
   const [usersRefreshKey, setUsersRefreshKey] = useState(0)
   const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0)
+  const [billingRefreshKey, setBillingRefreshKey] = useState(0)
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings | null>(null)
 
   useEffect(() => {
@@ -458,6 +462,7 @@ export default function AdminStudio({
     setActiveSection(section)
     if (section === 'users') setUsersRefreshKey(value => value + 1)
     if (section === 'analytics') setAnalyticsRefreshKey(value => value + 1)
+    if (section === 'billing') setBillingRefreshKey(value => value + 1)
     if (notice) setMessage(notice)
 
     window.requestAnimationFrame(() => {
@@ -546,6 +551,12 @@ export default function AdminStudio({
             onClick={() => navigateTo('analytics', 'admin-analytics')}
           >
             <BarChart3 size={19} /> Analytics
+          </button>
+          <button
+            className={activeSection === 'billing' ? 'active' : ''}
+            onClick={() => navigateTo('billing', 'admin-billing')}
+          >
+            <CreditCard size={19} /> Financeiro
           </button>
           <button
             className={activeSection === 'settings' ? 'active' : ''}
@@ -917,6 +928,12 @@ export default function AdminStudio({
         <AdminAnalyticsPanel
           token={token}
           refreshKey={analyticsRefreshKey}
+          onMessage={setMessage}
+        />
+
+        <AdminBillingPanel
+          token={token}
+          refreshKey={billingRefreshKey}
           onMessage={setMessage}
         />
 
