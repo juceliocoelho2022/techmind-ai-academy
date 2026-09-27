@@ -123,6 +123,13 @@ type CompleteLessonResponse = {
   percentage: number
 }
 
+type PublicPlatformSettings = {
+  academyName: string
+  tagline: string
+  supportEmail: string | null
+  registrationEnabled: boolean
+}
+
 const icons: Record<string, typeof Code2> = {
   'java-backend': Code2,
   'spring-boot': BrainCircuit,
@@ -131,6 +138,13 @@ const icons: Record<string, typeof Code2> = {
 }
 
 const TOKEN_KEY = 'techmind.accessToken'
+
+const DEFAULT_PLATFORM_SETTINGS: PublicPlatformSettings = {
+  academyName: 'TechMind AI Academy',
+  tagline: 'Do conteúdo ao projeto real.',
+  supportEmail: null,
+  registrationEnabled: true
+}
 
 async function api<T>(path: string, options: RequestInit = {}, token?: string | null): Promise<T> {
   const headers = new Headers(options.headers)
@@ -173,6 +187,9 @@ export default function App() {
   const [authBusy, setAuthBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [adminMode, setAdminMode] = useState(false)
+  const [platformSettings, setPlatformSettings] = useState<PublicPlatformSettings>(
+    DEFAULT_PLATFORM_SETTINGS
+  )
 
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
   const [curriculum, setCurriculum] = useState<CourseCurriculum | null>(null)
@@ -189,6 +206,19 @@ export default function App() {
     () => new Set(learningProgress?.completedLessonIds ?? []),
     [learningProgress]
   )
+
+  useEffect(() => {
+    api<PublicPlatformSettings>('/api/v1/settings/public')
+      .then(settings => {
+        setPlatformSettings(settings)
+        if (!settings.registrationEnabled) {
+          setAuthMode('login')
+        }
+      })
+      .catch(() => {
+        // Mantém os padrões locais se as configurações públicas estiverem indisponíveis.
+      })
+  }, [])
 
   const selectedCourse = useMemo(
     () => courses.find(course => course.id === selectedCourseId) ?? null,
@@ -261,7 +291,9 @@ export default function App() {
     localStorage.setItem(TOKEN_KEY, response.accessToken)
     setToken(response.accessToken)
     setUser(response.user)
-    setMessage(`Bem-vindo à TechMind, ${response.user.name.split(' ')[0]}!`)
+    setMessage(
+      `Bem-vindo à ${platformSettings.academyName}, ${response.user.name.split(' ')[0]}!`
+    )
   }
 
   async function handleAuth(event: FormEvent<HTMLFormElement>) {
@@ -569,10 +601,10 @@ export default function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <img src="/techmind-logo.png" alt="TechMind AI Academy" />
+          <img src="/techmind-logo.png" alt={platformSettings.academyName} />
           <div>
-            <span className="eyebrow">TECHMIND</span>
-            <h1>AI Academy</h1>
+            <span className="eyebrow">ACADEMY</span>
+            <h1>{platformSettings.academyName}</h1>
           </div>
         </div>
 
@@ -600,7 +632,7 @@ export default function App() {
             <span className="badge">
               <Sparkles size={15} /> Aprenda construindo
             </span>
-            <h2>Do conteúdo ao projeto real.</h2>
+            <h2>{platformSettings.tagline}</h2>
             <p>
               Trilhas práticas de Java, Spring Boot, AWS, Dados e IA com desafios,
               feedback, entrevistas simuladas e evolução mensurável.
@@ -636,7 +668,7 @@ export default function App() {
         {!user && (
           <section className="auth-panel" id="auth">
             <div className="auth-copy">
-              <span className="eyebrow">SUA CONTA TECHMIND</span>
+              <span className="eyebrow">SUA CONTA · {platformSettings.academyName.toUpperCase()}</span>
               <h3>
                 {authMode === 'register'
                   ? 'Comece sua jornada.'
@@ -645,12 +677,14 @@ export default function App() {
               <p>Seu progresso, XP e trilhas ficam vinculados ao seu perfil.</p>
 
               <div className="auth-switch">
-                <button
-                  className={authMode === 'register' ? 'active' : ''}
-                  onClick={() => setAuthMode('register')}
-                >
-                  Criar conta
-                </button>
+                {platformSettings.registrationEnabled && (
+                  <button
+                    className={authMode === 'register' ? 'active' : ''}
+                    onClick={() => setAuthMode('register')}
+                  >
+                    Criar conta
+                  </button>
+                )}
                 <button
                   className={authMode === 'login' ? 'active' : ''}
                   onClick={() => setAuthMode('login')}
@@ -658,6 +692,15 @@ export default function App() {
                   Entrar
                 </button>
               </div>
+
+              {!platformSettings.registrationEnabled && (
+                <p className="muted">
+                  Novos cadastros estão temporariamente fechados.
+                  {platformSettings.supportEmail
+                    ? ` Contato: ${platformSettings.supportEmail}`
+                    : ''}
+                </p>
+              )}
             </div>
 
             <form className="auth-form" onSubmit={handleAuth}>

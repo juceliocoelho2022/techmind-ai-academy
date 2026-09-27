@@ -28,6 +28,7 @@ import AdminQuizEditor from './AdminQuizEditor'
 import AdminUsersPanel from './AdminUsersPanel'
 import AdminCourseTemplateCatalog from './AdminCourseTemplateCatalog'
 import AdminAnalyticsPanel from './AdminAnalyticsPanel'
+import AdminSettingsPanel, { type PlatformSettings } from './AdminSettingsPanel'
 
 type Course = {
   id: number
@@ -199,6 +200,7 @@ export default function AdminStudio({
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard')
   const [usersRefreshKey, setUsersRefreshKey] = useState(0)
   const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0)
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettings | null>(null)
 
   useEffect(() => {
     if (!selectedCourseId && courses.length > 0) {
@@ -483,10 +485,13 @@ export default function AdminStudio({
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <img src="/techmind-logo.png" alt="TechMind AI Academy" />
+          <img
+            src="/techmind-logo.png"
+            alt={platformSettings?.academyName ?? 'TechMind AI Academy'}
+          />
           <div>
-            <span>TECHMIND</span>
-            <strong>AI Academy</strong>
+            <span>ACADEMY</span>
+            <strong>{platformSettings?.academyName ?? 'TechMind AI Academy'}</strong>
           </div>
         </div>
 
@@ -541,13 +546,7 @@ export default function AdminStudio({
           </button>
           <button
             className={activeSection === 'settings' ? 'active' : ''}
-            onClick={() =>
-              navigateTo(
-                'settings',
-                'admin-settings',
-                'Configurações da plataforma estão preparadas para a próxima etapa.'
-              )
-            }
+            onClick={() => navigateTo('settings', 'admin-settings')}
           >
             <Settings size={19} /> Configurações
           </button>
@@ -565,9 +564,11 @@ export default function AdminStudio({
       <main className="admin-main">
         <header className="admin-header admin-scroll-target" id="admin-dashboard">
           <div>
-            <span className="admin-kicker">TECHMIND CONTENT MANAGEMENT</span>
+            <span className="admin-kicker">
+              {(platformSettings?.academyName ?? 'TechMind AI Academy').toUpperCase()} · CONTENT MANAGEMENT
+            </span>
             <h1>Admin Studio</h1>
-            <p>Gerencie vídeos, imagens, projetos e e-books das aulas.</p>
+            <p>{platformSettings?.tagline ?? 'Do conteúdo ao projeto real.'}</p>
           </div>
 
           <div className="admin-header-actions">
@@ -616,6 +617,7 @@ export default function AdminStudio({
           selectedCourse={selectedCourse}
           selectedModule={selectedModule}
           selectedLesson={selectedLesson}
+          defaultLessonXp={platformSettings?.defaultLessonXp ?? 10}
           onChanged={refreshStructure}
           onMessage={setMessage}
         />
@@ -623,6 +625,8 @@ export default function AdminStudio({
         <AdminQuizEditor
           token={token}
           lesson={selectedLesson}
+          defaultPassingScore={platformSettings?.defaultQuizPassingScore ?? 70}
+          defaultXpReward={platformSettings?.defaultQuizXp ?? 50}
           onMessage={setMessage}
         />
 
@@ -901,16 +905,11 @@ export default function AdminStudio({
           onMessage={setMessage}
         />
 
-        <section className="admin-module-grid admin-module-grid-secondary">
-          <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-settings">
-            <Settings size={24} />
-            <div>
-              <span className="admin-kicker">CONFIGURAÇÕES</span>
-              <h2>Configurações do ambiente</h2>
-              <p>Área reservada para preferências, publicação, armazenamento e parâmetros da Academy.</p>
-            </div>
-          </article>
-        </section>
+        <AdminSettingsPanel
+          token={token}
+          onChanged={setPlatformSettings}
+          onMessage={setMessage}
+        />
 
         <button className="admin-mobile-exit" onClick={onExit}>
           <LogOut size={17} /> Voltar ao aluno

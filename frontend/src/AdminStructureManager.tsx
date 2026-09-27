@@ -46,6 +46,7 @@ type Props = {
   selectedCourse: Course | null
   selectedModule: LearningModule | null
   selectedLesson: Lesson | null
+  defaultLessonXp: number
   onChanged: () => Promise<void>
   onMessage: (message: string) => void
 }
@@ -89,6 +90,7 @@ export default function AdminStructureManager({
   selectedCourse,
   selectedModule,
   selectedLesson,
+  defaultLessonXp,
   onChanged,
   onMessage
 }: Props) {
@@ -169,7 +171,7 @@ export default function AdminStructureManager({
           title: String(data.get('title') ?? ''),
           summary: String(data.get('summary') ?? ''),
           position: positionValue ? Number(positionValue) : null,
-          xpReward: xpValue ? Number(xpValue) : 10
+          xpReward: xpValue ? Number(xpValue) : defaultLessonXp
         }
 
         const path =
@@ -380,6 +382,7 @@ export default function AdminStructureManager({
             course={selectedCourse}
             module={selectedModule}
             lesson={selectedLesson}
+            defaultLessonXp={defaultLessonXp}
             busy={busy}
             onSubmit={submit}
           />
@@ -403,6 +406,7 @@ type StructureFormProps = {
   course: Course | null
   module: LearningModule | null
   lesson: Lesson | null
+  defaultLessonXp: number
   busy: boolean
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
@@ -413,6 +417,7 @@ function StructureForm({
   course,
   module,
   lesson,
+  defaultLessonXp,
   busy,
   onSubmit
 }: StructureFormProps) {
