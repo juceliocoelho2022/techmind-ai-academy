@@ -40,6 +40,7 @@ type Course = {
   category: string
   technology: string
   level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  requiredPlan: 'FREE' | 'PRO' | 'CAREER'
   totalLessons: number
 }
 
