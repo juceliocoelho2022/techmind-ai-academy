@@ -51,6 +51,8 @@ public class SubscriptionService {
     public MySubscriptionResponse current(String email) {
         var user = findUser(email);
         var subscription = ensureFreeSubscription(user);
+        expirePaidSubscriptionIfNeeded(subscription);
+
         var pending = upgradeRequestRepository
                 .findFirstByUserIdAndStatusOrderByCreatedAtDesc(
                         user.getId(),
@@ -187,8 +189,95 @@ public class SubscriptionService {
     public SubscriptionPlan currentPlanForUser(Long userId) {
         return subscriptionRepository.findByUserId(userId)
                 .filter(subscription -> subscription.getStatus() == SubscriptionStatus.ACTIVE)
+                .filter(subscription ->
+                        subscription.getEndsAt() == null
+                                || subscription.getEndsAt().isAfter(OffsetDateTime.now())
+                )
                 .map(UserSubscription::getPlanCode)
                 .orElse(SubscriptionPlan.FREE);
+    }
+
+    @Transactional
+    public UserSubscription activatePaidPlan(
+            Long userId,
+            SubscriptionPlan purchasedPlan,
+            BillingPeriod billingPeriod,
+            String paymentReference
+    ) {
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuário não encontrado"
+                ));
+
+        var subscription = ensureFreeSubscription(user);
+        var now = OffsetDateTime.now();
+
+        var effectiveCurrentPlan =
+                subscription.getStatus() == SubscriptionStatus.ACTIVE
+                        && (subscription.getEndsAt() == null || subscription.getEndsAt().isAfter(now))
+                        ? subscription.getPlanCode()
+                        : SubscriptionPlan.FREE;
+
+        if (purchasedPlan.rank() >= effectiveCurrentPlan.rank()) {
+            boolean sameActivePaidPlan =
+                    subscription.getStatus() == SubscriptionStatus.ACTIVE
+                            && subscription.getPlanCode() == purchasedPlan
+                            && subscription.getSource() == SubscriptionSource.PAYMENT
+                            && subscription.getEndsAt() != null
+                            && subscription.getEndsAt().isAfter(now);
+
+            var periodStart = sameActivePaidPlan
+                    ? subscription.getEndsAt()
+                    : now;
+
+            subscription.setPlanCode(purchasedPlan);
+            subscription.setStatus(SubscriptionStatus.ACTIVE);
+            subscription.setSource(SubscriptionSource.PAYMENT);
+            subscription.setStartedAt(now);
+            subscription.setEndsAt(
+                    billingPeriod == BillingPeriod.ANNUAL
+                            ? periodStart.plusYears(1)
+                            : periodStart.plusMonths(1)
+            );
+            subscriptionRepository.save(subscription);
+        }
+
+        upgradeRequestRepository
+                .findFirstByUserIdAndStatusOrderByCreatedAtDesc(
+                        userId,
+                        UpgradeRequestStatus.PENDING
+                )
+                .ifPresent(request -> {
+                    if (purchasedPlan.rank() >= request.getRequestedPlan().rank()) {
+                        request.setStatus(UpgradeRequestStatus.APPROVED);
+                        request.setResolvedAt(now);
+                        request.setResolvedByEmail("payment:mercado-pago");
+                        upgradeRequestRepository.save(request);
+                    }
+                });
+
+        auditService.record(
+                "payment:mercado-pago",
+                "PAYMENT_SUBSCRIPTION_ACTIVATED",
+                "USER_SUBSCRIPTION",
+                subscription.getId(),
+                "Pagamento " + paymentReference
+                        + " confirmou plano " + purchasedPlan.name()
+                        + " (" + billingPeriod.name() + ") para " + user.getEmail()
+        );
+
+        return subscription;
+    }
+
+    private void expirePaidSubscriptionIfNeeded(UserSubscription subscription) {
+        if (subscription.getStatus() == SubscriptionStatus.ACTIVE
+                && subscription.getSource() == SubscriptionSource.PAYMENT
+                && subscription.getEndsAt() != null
+                && !subscription.getEndsAt().isAfter(OffsetDateTime.now())) {
+            subscription.setStatus(SubscriptionStatus.PAST_DUE);
+            subscriptionRepository.save(subscription);
+        }
     }
 
     private MySubscriptionResponse toMyResponse(
