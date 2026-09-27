@@ -49,6 +49,7 @@ public class PlatformSettingsService {
         settings.setAcademyName(request.academyName().trim());
         settings.setTagline(request.tagline().trim());
         settings.setSupportEmail(normalizeNullable(request.supportEmail()));
+        settings.setWhatsappNumber(normalizeNullable(request.whatsappNumber()));
         settings.setRegistrationEnabled(request.registrationEnabled());
         settings.setDefaultLessonXp(request.defaultLessonXp());
         settings.setDefaultQuizPassingScore(request.defaultQuizPassingScore());
