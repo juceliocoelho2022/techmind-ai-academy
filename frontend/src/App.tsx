@@ -1,7 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import AdminStudio from './AdminStudio'
 import LessonQuizPanel from './LessonQuizPanel'
-import PricingSection, { type PlanCode } from './PricingSection'
+import PricingSection, {
+  type BillingPeriod,
+  type PlanCode
+} from './PricingSection'
 import {
   ArrowLeft,
   BookOpen,
@@ -131,6 +134,22 @@ type PublicPlatformSettings = {
   registrationEnabled: boolean
 }
 
+type MySubscription = {
+  userId: number
+  plan: 'FREE' | 'PRO' | 'CAREER'
+  status: 'ACTIVE' | 'CANCELED' | 'PAST_DUE'
+  source: 'FREE' | 'MANUAL' | 'PAYMENT'
+  startedAt: string
+  endsAt: string | null
+  pendingUpgrade: {
+    id: number
+    requestedPlan: 'PRO' | 'CAREER'
+    billingPeriod: BillingPeriod
+    status: 'PENDING' | 'APPROVED' | 'REJECTED'
+    createdAt: string
+  } | null
+}
+
 const icons: Record<string, typeof Code2> = {
   'java-backend': Code2,
   'spring-boot': BrainCircuit,
@@ -140,6 +159,7 @@ const icons: Record<string, typeof Code2> = {
 
 const TOKEN_KEY = 'techmind.accessToken'
 const PLAN_KEY = 'techmind.selectedPlan'
+const BILLING_KEY = 'techmind.selectedBillingPeriod'
 
 const DEFAULT_PLATFORM_SETTINGS: PublicPlatformSettings = {
   academyName: 'TechMind AI Academy',
@@ -189,6 +209,7 @@ export default function App() {
   const [authBusy, setAuthBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [adminMode, setAdminMode] = useState(false)
+  const [subscription, setSubscription] = useState<MySubscription | null>(null)
   const [platformSettings, setPlatformSettings] = useState<PublicPlatformSettings>(
     DEFAULT_PLATFORM_SETTINGS
   )
@@ -258,18 +279,21 @@ export default function App() {
       setProgress(null)
       setEnrollments([])
       setLearningProgress(null)
+      setSubscription(null)
       return
     }
 
     Promise.all([
       api<User>('/api/v1/users/me', {}, token),
       api<Progress>('/api/v1/progress/me', {}, token),
-      api<Enrollment[]>('/api/v1/enrollments/me', {}, token)
+      api<Enrollment[]>('/api/v1/enrollments/me', {}, token),
+      api<MySubscription>('/api/v1/subscriptions/me', {}, token)
     ])
-      .then(([me, myProgress, myEnrollments]) => {
+      .then(([me, myProgress, myEnrollments, mySubscription]) => {
         setUser(me)
         setProgress(myProgress)
         setEnrollments(myEnrollments)
+        setSubscription(mySubscription)
       })
       .catch(() => logout())
   }, [token])
@@ -289,10 +313,74 @@ export default function App() {
       .catch(() => setLearningProgress(null))
   }, [selectedCourseId, token, enrolledIds])
 
-  function saveSession(response: AuthResponse) {
+  async function requestUpgrade(
+    activeToken: string,
+    plan: 'PRO' | 'CAREER',
+    billingPeriod: BillingPeriod,
+    afterAuthentication = false
+  ) {
+    try {
+      const updated = await api<MySubscription>(
+        '/api/v1/subscriptions/upgrade-requests',
+        {
+          method: 'POST',
+          body: JSON.stringify({ plan, billingPeriod })
+        },
+        activeToken
+      )
+
+      setSubscription(updated)
+      localStorage.removeItem(PLAN_KEY)
+      localStorage.removeItem(BILLING_KEY)
+
+      setMessage(
+        afterAuthentication
+          ? `Conta pronta. Solicitação do plano ${plan === 'PRO' ? 'Pro' : 'Career'} enviada para aprovação.`
+          : `Solicitação do plano ${plan === 'PRO' ? 'Pro' : 'Career'} enviada. Status: pendente de aprovação.`
+      )
+    } catch (error) {
+      try {
+        const current = await api<MySubscription>(
+          '/api/v1/subscriptions/me',
+          {},
+          activeToken
+        )
+        setSubscription(current)
+      } catch {
+        // Mantém o último estado conhecido.
+      }
+
+      localStorage.removeItem(PLAN_KEY)
+      localStorage.removeItem(BILLING_KEY)
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível solicitar o upgrade.'
+      )
+    }
+  }
+
+  async function saveSession(response: AuthResponse) {
     localStorage.setItem(TOKEN_KEY, response.accessToken)
     setToken(response.accessToken)
     setUser(response.user)
+
+    const selectedPlan = localStorage.getItem(PLAN_KEY)
+    const selectedBilling =
+      (localStorage.getItem(BILLING_KEY) as BillingPeriod | null) ?? 'MONTHLY'
+
+    if (selectedPlan === 'PRO' || selectedPlan === 'CAREER') {
+      await requestUpgrade(
+        response.accessToken,
+        selectedPlan,
+        selectedBilling,
+        true
+      )
+      return
+    }
+
+    localStorage.removeItem(PLAN_KEY)
+    localStorage.removeItem(BILLING_KEY)
     setMessage(
       `Bem-vindo à ${platformSettings.academyName}, ${response.user.name.split(' ')[0]}!`
     )
@@ -329,7 +417,7 @@ export default function App() {
         }
       )
 
-      saveSession(response)
+      await saveSession(response)
       form.reset()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Falha na autenticação.')
@@ -584,13 +672,21 @@ export default function App() {
     setProgress(null)
     setEnrollments([])
     setLearningProgress(null)
+    setSubscription(null)
     setMessage('Sessão encerrada.')
   }
 
-  function handlePlanSelect(plan: PlanCode) {
+  async function handlePlanSelect(
+    plan: PlanCode,
+    billingPeriod: BillingPeriod
+  ) {
     localStorage.setItem(PLAN_KEY, plan)
+    localStorage.setItem(BILLING_KEY, billingPeriod)
 
     if (plan === 'EDUCATION') {
+      localStorage.removeItem(PLAN_KEY)
+      localStorage.removeItem(BILLING_KEY)
+
       if (platformSettings.supportEmail) {
         const subject = encodeURIComponent('Interesse no TechMind Education / Business')
         const body = encodeURIComponent(
@@ -607,14 +703,19 @@ export default function App() {
       return
     }
 
-    if (user) {
+    if (user && token) {
       if (plan === 'FREE') {
-        setMessage('Sua conta já possui acesso ao plano Free.')
-      } else {
+        localStorage.removeItem(PLAN_KEY)
+        localStorage.removeItem(BILLING_KEY)
         setMessage(
-          `Plano ${plan === 'PRO' ? 'Pro' : 'Career'} selecionado. A preferência foi salva para a próxima etapa de assinatura.`
+          subscription?.plan === 'FREE'
+            ? 'Free já é o seu plano atual.'
+            : 'Downgrade para Free será implementado junto ao ciclo de cancelamento da assinatura.'
         )
+        return
       }
+
+      await requestUpgrade(token, plan, billingPeriod)
       return
     }
 
@@ -628,7 +729,7 @@ export default function App() {
       setMessage(
         plan === 'FREE'
           ? 'Plano Free selecionado. Crie sua conta para começar.'
-          : `Plano ${plan === 'PRO' ? 'Pro' : 'Career'} selecionado. Crie sua conta para continuar.`
+          : `Plano ${plan === 'PRO' ? 'Pro' : 'Career'} selecionado. Crie sua conta e o upgrade será solicitado automaticamente.`
       )
     }
 
@@ -671,6 +772,11 @@ export default function App() {
             </button>
           )}
           {user && <span className="user-chip">{user.name}</span>}
+          {user && subscription && (
+            <span className={`plan-chip ${subscription.plan.toLowerCase()}`}>
+              {subscription.plan}
+            </span>
+          )}
           <div className="xp">
             <Trophy size={18} /> {progress?.xp ?? 0} XP
           </div>
@@ -813,6 +919,8 @@ export default function App() {
 
         <PricingSection
           supportEmail={platformSettings.supportEmail}
+          currentPlan={subscription?.plan ?? null}
+          pendingPlan={subscription?.pendingUpgrade?.requestedPlan ?? null}
           onSelectPlan={handlePlanSelect}
         />
 
