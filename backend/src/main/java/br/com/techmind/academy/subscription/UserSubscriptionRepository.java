@@ -22,6 +22,14 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
             OffsetDateTime now
     );
 
+    long countByStatusAndSourceAndPlanCodeAndBillingPeriodAndEndsAtAfter(
+            SubscriptionStatus status,
+            SubscriptionSource source,
+            SubscriptionPlan planCode,
+            BillingPeriod billingPeriod,
+            OffsetDateTime now
+    );
+
     long countByStatusAndEndsAtBetween(
             SubscriptionStatus status,
             OffsetDateTime start,
