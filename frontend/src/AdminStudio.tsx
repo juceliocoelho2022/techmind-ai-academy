@@ -25,6 +25,7 @@ import {
 import './admin-studio.css'
 import AdminStructureManager from './AdminStructureManager'
 import AdminQuizEditor from './AdminQuizEditor'
+import AdminUsersPanel from './AdminUsersPanel'
 
 type Course = {
   id: number
@@ -191,6 +192,7 @@ export default function AdminStudio({
   const [message, setMessage] = useState('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard')
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!selectedCourseId && courses.length > 0) {
@@ -435,6 +437,7 @@ export default function AdminStudio({
 
   function navigateTo(section: AdminSection, targetId: string, notice?: string) {
     setActiveSection(section)
+    if (section === 'users') setUsersRefreshKey(value => value + 1)
     if (notice) setMessage(notice)
 
     window.requestAnimationFrame(() => {
@@ -511,13 +514,7 @@ export default function AdminStudio({
           </button>
           <button
             className={activeSection === 'users' ? 'active' : ''}
-            onClick={() =>
-              navigateTo(
-                'users',
-                'admin-users',
-                'Gestão de usuários será a próxima evolução deste módulo.'
-              )
-            }
+            onClick={() => navigateTo('users', 'admin-users')}
           >
             <Users size={19} /> Usuários
           </button>
@@ -877,16 +874,13 @@ export default function AdminStudio({
           </div>
         </div>
 
-        <section className="admin-module-grid">
-          <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-users">
-            <Users size={24} />
-            <div>
-              <span className="admin-kicker">USUÁRIOS</span>
-              <h2>Gestão de usuários</h2>
-              <p>Área reservada para listar alunos, papéis, matrículas e status de acesso.</p>
-            </div>
-          </article>
+        <AdminUsersPanel
+          token={token}
+          refreshKey={usersRefreshKey}
+          onMessage={setMessage}
+        />
 
+        <section className="admin-module-grid admin-module-grid-secondary">
           <article className="admin-card admin-module-placeholder admin-scroll-target" id="admin-analytics">
             <BarChart3 size={24} />
             <div>
