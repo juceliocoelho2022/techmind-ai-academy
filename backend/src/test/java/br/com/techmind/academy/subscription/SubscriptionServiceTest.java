@@ -152,6 +152,35 @@ class SubscriptionServiceTest {
         );
     }
 
+    @Test
+    void shouldTreatInactivePremiumSubscriptionAsFreeForEntitlements() {
+        var userRepository = mock(UserRepository.class);
+        var subscriptionRepository = mock(UserSubscriptionRepository.class);
+        var requestRepository = mock(SubscriptionUpgradeRequestRepository.class);
+        var auditService = mock(AdminAuditService.class);
+
+        var user = student();
+        var subscription = UserSubscription.builder()
+                .user(user)
+                .planCode(SubscriptionPlan.PRO)
+                .status(SubscriptionStatus.CANCELED)
+                .source(SubscriptionSource.MANUAL)
+                .build();
+
+        when(subscriptionRepository.findByUserId(user.getId()))
+                .thenReturn(Optional.of(subscription));
+
+        var service = new SubscriptionService(
+                userRepository,
+                subscriptionRepository,
+                requestRepository,
+                auditService
+        );
+
+        assertThat(service.currentPlanForUser(user.getId()))
+                .isEqualTo(SubscriptionPlan.FREE);
+    }
+
     private User student() {
         return User.builder()
                 .id(7L)
