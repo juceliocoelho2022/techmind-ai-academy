@@ -175,6 +175,7 @@
 }
 
 .structure-form input,
+.structure-form select,
 .structure-form textarea {
   border: 1px solid #28516f;
   background: #071827;
@@ -186,6 +187,7 @@
 }
 
 .structure-form input:focus,
+.structure-form select:focus,
 .structure-form textarea:focus {
   border-color: #53d8ff;
   box-shadow: 0 0 0 3px rgba(83, 216, 255, .07);

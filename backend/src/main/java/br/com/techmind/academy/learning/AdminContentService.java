@@ -63,6 +63,9 @@ public class AdminContentService {
                 .slug(normalizeSlug(request.slug()))
                 .title(request.title().trim())
                 .description(request.description().trim())
+                .category(request.category().trim())
+                .technology(request.technology().trim())
+                .level(request.level())
                 .totalLessons(request.totalLessons() == null ? 0 : request.totalLessons())
                 .build();
 
@@ -85,6 +88,9 @@ public class AdminContentService {
         course.setSlug(normalizedSlug);
         course.setTitle(request.title().trim());
         course.setDescription(request.description().trim());
+        course.setCategory(request.category().trim());
+        course.setTechnology(request.technology().trim());
+        course.setLevel(request.level());
         course.setTotalLessons(request.totalLessons() == null ? course.getTotalLessons() : request.totalLessons());
 
         return AdminCourseResponse.from(courseRepository.save(course));

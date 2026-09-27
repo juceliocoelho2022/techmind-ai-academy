@@ -28,6 +28,9 @@ type Course = {
   slug: string
   title: string
   description: string
+  category: string
+  technology: string
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
   totalLessons: number
 }
 

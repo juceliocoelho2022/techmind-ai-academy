@@ -1,7 +1,9 @@
 package br.com.techmind.academy.learning;
 
+import br.com.techmind.academy.course.CourseLevel;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -18,6 +20,17 @@ public record AdminCourseRequest(
         @NotBlank
         @Size(max = 500)
         String description,
+
+        @NotBlank
+        @Size(max = 80)
+        String category,
+
+        @NotBlank
+        @Size(max = 80)
+        String technology,
+
+        @NotNull
+        CourseLevel level,
 
         @Min(0)
         Integer totalLessons
