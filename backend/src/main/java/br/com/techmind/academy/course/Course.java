@@ -1,5 +1,6 @@
 package br.com.techmind.academy.course;
 
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,6 +35,10 @@ public class Course {
     @Column(nullable = false, length = 30)
     private CourseLevel level;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "required_plan", nullable = false, length = 20)
+    private SubscriptionPlan requiredPlan;
+
     @Column(nullable = false)
     private Integer totalLessons;
 
@@ -42,6 +47,7 @@ public class Course {
         if (category == null || category.isBlank()) category = "Geral";
         if (technology == null || technology.isBlank()) technology = "Geral";
         if (level == null) level = CourseLevel.INTERMEDIATE;
+        if (requiredPlan == null) requiredPlan = SubscriptionPlan.FREE;
         if (totalLessons == null) totalLessons = 0;
     }
 }
