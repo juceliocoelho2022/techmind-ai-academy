@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import AdminStudio from './AdminStudio'
 import LessonQuizPanel from './LessonQuizPanel'
+import PricingSection, { type PlanCode } from './PricingSection'
 import {
   ArrowLeft,
   BookOpen,
@@ -138,6 +139,7 @@ const icons: Record<string, typeof Code2> = {
 }
 
 const TOKEN_KEY = 'techmind.accessToken'
+const PLAN_KEY = 'techmind.selectedPlan'
 
 const DEFAULT_PLATFORM_SETTINGS: PublicPlatformSettings = {
   academyName: 'TechMind AI Academy',
@@ -585,6 +587,60 @@ export default function App() {
     setMessage('Sessão encerrada.')
   }
 
+  function handlePlanSelect(plan: PlanCode) {
+    localStorage.setItem(PLAN_KEY, plan)
+
+    if (plan === 'EDUCATION') {
+      if (platformSettings.supportEmail) {
+        const subject = encodeURIComponent('Interesse no TechMind Education / Business')
+        const body = encodeURIComponent(
+          'Olá! Tenho interesse em conhecer os planos TechMind Education / Business.'
+        )
+        window.location.href =
+          `mailto:${platformSettings.supportEmail}?subject=${subject}&body=${body}`
+        return
+      }
+
+      setMessage(
+        'Interesse registrado. Configure o e-mail de suporte no Admin Studio para ativar o contato comercial direto.'
+      )
+      return
+    }
+
+    if (user) {
+      if (plan === 'FREE') {
+        setMessage('Sua conta já possui acesso ao plano Free.')
+      } else {
+        setMessage(
+          `Plano ${plan === 'PRO' ? 'Pro' : 'Career'} selecionado. A preferência foi salva para a próxima etapa de assinatura.`
+        )
+      }
+      return
+    }
+
+    if (!platformSettings.registrationEnabled) {
+      setAuthMode('login')
+      setMessage(
+        'Os novos cadastros estão fechados no momento. Entre com sua conta para continuar.'
+      )
+    } else {
+      setAuthMode('register')
+      setMessage(
+        plan === 'FREE'
+          ? 'Plano Free selecionado. Crie sua conta para começar.'
+          : `Plano ${plan === 'PRO' ? 'Pro' : 'Career'} selecionado. Crie sua conta para continuar.`
+      )
+    }
+
+    window.requestAnimationFrame(() => {
+      document.getElementById('auth')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      })
+    })
+  }
+
+
   if (adminMode && user?.role === 'ADMIN' && token) {
     return (
       <AdminStudio
@@ -647,6 +703,21 @@ export default function App() {
               <span>
                 <Code2 size={17} /> Projetos práticos
               </span>
+            </div>
+
+            <div className="hero-actions">
+              <button
+                type="button"
+                className="secondary-cta"
+                onClick={() =>
+                  document.getElementById('plans')?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                  })
+                }
+              >
+                Ver planos
+              </button>
             </div>
           </div>
 
@@ -739,6 +810,11 @@ export default function App() {
         )}
 
         {message && <div className="notice">{message}</div>}
+
+        <PricingSection
+          supportEmail={platformSettings.supportEmail}
+          onSelectPlan={handlePlanSelect}
+        />
 
         <section>
           <div className="section-head">
