@@ -29,6 +29,7 @@ import AdminUsersPanel from './AdminUsersPanel'
 import AdminCourseTemplateCatalog from './AdminCourseTemplateCatalog'
 import AdminAnalyticsPanel from './AdminAnalyticsPanel'
 import AdminSettingsPanel, { type PlatformSettings } from './AdminSettingsPanel'
+import AdminSubscriptionRequestsPanel from './AdminSubscriptionRequestsPanel'
 import AdminAuditPanel from './AdminAuditPanel'
 
 type Course = {
@@ -902,6 +903,13 @@ export default function AdminStudio({
         <AdminUsersPanel
           token={token}
           refreshKey={usersRefreshKey}
+          onMessage={setMessage}
+        />
+
+        <AdminSubscriptionRequestsPanel
+          token={token}
+          refreshKey={usersRefreshKey}
+          onChanged={() => setUsersRefreshKey(value => value + 1)}
           onMessage={setMessage}
         />
 
