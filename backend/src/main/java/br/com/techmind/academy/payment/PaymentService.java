@@ -54,6 +54,14 @@ public class PaymentService {
             );
         }
 
+        if (!gateway.hasValidReturnUrl()) {
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Mercado Pago automático requer APP_PUBLIC_URL com HTTPS público. "
+                            + "Em localhost, a TechMind usa o fluxo manual de upgrade."
+            );
+        }
+
         if (request.plan() == SubscriptionPlan.FREE) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
