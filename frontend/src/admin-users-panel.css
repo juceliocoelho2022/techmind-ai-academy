@@ -233,3 +233,26 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin-plan-badge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 9px;
+  font-weight: 900;
+  border: 1px solid #2b465a;
+  background: #101f2c;
+  color: #8ea5b7;
+}
+
+.admin-plan-badge.pro {
+  border-color: #2d7995;
+  background: #0c3448;
+  color: #9cecff;
+}
+
+.admin-plan-badge.career {
+  border-color: #5a50a2;
+  background: #262052;
+  color: #c1b9ff;
+}
