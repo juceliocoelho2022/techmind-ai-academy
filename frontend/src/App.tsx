@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import AdminStudio from './AdminStudio'
 import LessonQuizPanel from './LessonQuizPanel'
 import BillingCenter from './BillingCenter'
+import SupportContactSection from './SupportContactSection'
 import PricingSection, {
   type BillingPeriod,
   type PlanCode
@@ -135,6 +136,7 @@ type PublicPlatformSettings = {
   academyName: string
   tagline: string
   supportEmail: string | null
+  whatsappNumber: string | null
   registrationEnabled: boolean
 }
 
@@ -188,7 +190,8 @@ const PLAN_RANK: Record<SubscriptionPlan, number> = {
 const DEFAULT_PLATFORM_SETTINGS: PublicPlatformSettings = {
   academyName: 'TechMind AI Academy',
   tagline: 'Do conteúdo ao projeto real.',
-  supportEmail: null,
+  supportEmail: 'suporttecmind@gmail.com',
+  whatsappNumber: '+5511911625945',
   registrationEnabled: true
 }
 
@@ -1488,6 +1491,11 @@ export default function App() {
             )}
           </section>
         )}
+
+        <SupportContactSection
+          supportEmail={platformSettings.supportEmail}
+          whatsappNumber={platformSettings.whatsappNumber}
+        />
 
         <section className="ai-panel">
           <div>
