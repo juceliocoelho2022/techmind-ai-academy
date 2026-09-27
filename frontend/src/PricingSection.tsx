@@ -18,6 +18,7 @@ type Props = {
   supportEmail: string | null
   currentPlan: 'FREE' | 'PRO' | 'CAREER' | null
   pendingPlan: 'PRO' | 'CAREER' | null
+  processingPlan: 'PRO' | 'CAREER' | null
   onSelectPlan: (plan: PlanCode, billingPeriod: BillingPeriod) => void
 }
 
@@ -97,6 +98,7 @@ export default function PricingSection({
   supportEmail,
   currentPlan,
   pendingPlan,
+  processingPlan,
   onSelectPlan
 }: Props) {
   const [period, setPeriod] = useState<BillingPeriod>('MONTHLY')
@@ -163,6 +165,7 @@ export default function PricingSection({
           const currentRank = currentPlan ? planRank[currentPlan] : -1
           const current = currentPlan === plan.code
           const pending = pendingPlan === plan.code
+          const processing = processingPlan === plan.code
           const includedByHigherPlan =
             currentPlan !== null && currentRank > planRank[plan.code]
 
@@ -230,20 +233,22 @@ export default function PricingSection({
               <button
                 type="button"
                 className={plan.code === 'PRO' ? 'primary pricing-cta' : 'pricing-cta'}
-                disabled={current || pending || includedByHigherPlan}
+                disabled={current || pending || processing || includedByHigherPlan}
                 onClick={() => onSelectPlan(plan.code, period)}
               >
                 {current
                   ? 'Seu plano atual'
-                  : pending
+                  : processing
+                    ? 'Abrindo checkout...'
+                    : pending
                     ? 'Upgrade solicitado'
                     : includedByHigherPlan
                       ? `Incluído no ${currentPlan}`
                       : plan.code === 'FREE'
                         ? 'Começar grátis'
                         : plan.code === 'PRO'
-                          ? 'Escolher Pro'
-                          : 'Escolher Career'}
+                          ? 'Assinar Pro'
+                          : 'Assinar Career'}
               </button>
             </article>
           )
@@ -286,9 +291,11 @@ export default function PricingSection({
       </div>
 
       <p className="pricing-note">
-        Os valores exibidos são os planos comerciais atuais da TechMind.
-        Solicitações Pro/Career ficam pendentes até aprovação. A confirmação
-        automática será conectada ao gateway de pagamento.
+        Planos pagos usam checkout externo do Mercado Pago quando o gateway
+        está configurado. A ativação só ocorre após confirmação do pagamento.
+        Nesta versão, mensal e anual liberam acesso pelo período comprado; a
+        renovação automática será adicionada em uma etapa própria. Sem gateway,
+        a aprovação manual permanece como contingência operacional.
       </p>
     </section>
   )

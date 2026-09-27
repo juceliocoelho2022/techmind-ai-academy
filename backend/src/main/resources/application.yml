@@ -38,6 +38,14 @@ app:
     learning-resources-root: ${LEARNING_RESOURCES_ROOT:./storage/learning-resources}
     learning-resources-max-bytes: ${LEARNING_RESOURCES_MAX_BYTES:524288000}
 
+  payments:
+    public-url: ${APP_PUBLIC_URL:http://localhost:3000}
+    webhook-base-url: ${PAYMENT_WEBHOOK_BASE_URL:}
+    mercado-pago:
+      access-token: ${MERCADO_PAGO_ACCESS_TOKEN:}
+      webhook-secret: ${MERCADO_PAGO_WEBHOOK_SECRET:}
+      sandbox: ${MERCADO_PAGO_SANDBOX:true}
+
 management:
 
   endpoints:
