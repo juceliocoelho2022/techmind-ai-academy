@@ -1,6 +1,7 @@
 package br.com.techmind.academy.auth;
 
 import br.com.techmind.academy.security.JwtService;
+import br.com.techmind.academy.settings.PlatformSettingsService;
 import br.com.techmind.academy.user.User;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserResponse;
@@ -18,15 +19,29 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final PlatformSettingsService settingsService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            PlatformSettingsService settingsService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.settingsService = settingsService;
     }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (!settingsService.isRegistrationEnabled()) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Novos cadastros estão temporariamente desabilitados"
+            );
+        }
+
         var email = normalizeEmail(request.email());
         if (userRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
