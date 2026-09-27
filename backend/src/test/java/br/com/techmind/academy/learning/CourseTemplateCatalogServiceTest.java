@@ -75,6 +75,43 @@ class CourseTemplateCatalogServiceTest {
     }
 
     @Test
+    void shouldExposeJavaInProgrammingCategory() {
+        var courseRepository = mock(CourseRepository.class);
+        var moduleRepository = mock(CourseModuleRepository.class);
+        var lessonRepository = mock(LessonRepository.class);
+        var userRepository = mock(UserRepository.class);
+
+        var admin = User.builder()
+                .id(1L)
+                .name("Admin")
+                .email("admin@techmind.dev")
+                .passwordHash("hash")
+                .role(UserRole.ADMIN)
+                .build();
+
+        when(userRepository.findByEmail("admin@techmind.dev"))
+                .thenReturn(Optional.of(admin));
+
+        var service = new CourseTemplateCatalogService(
+                courseRepository,
+                moduleRepository,
+                lessonRepository,
+                userRepository
+        );
+
+        var java = service.catalog("admin@techmind.dev").stream()
+                .filter(template -> template.key().equals("java-programming"))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(java.category()).isEqualTo("Programação");
+        assertThat(java.technology()).isEqualTo("Java");
+        assertThat(java.level()).isEqualTo(CourseLevel.BEGINNER);
+        assertThat(java.modules()).hasSize(4);
+        assertThat(java.totalLessons()).isEqualTo(8);
+    }
+
+    @Test
     void shouldCreateCourseWithoutStarterStructureWhenDisabled() {
         var courseRepository = mock(CourseRepository.class);
         var moduleRepository = mock(CourseModuleRepository.class);

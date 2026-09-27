@@ -366,6 +366,43 @@ public class CourseTemplateCatalogService {
                         )
                 ),
                 template(
+                        "java-programming",
+                        "Programação",
+                        "Java",
+                        CourseLevel.BEGINNER,
+                        "Java",
+                        "java-fundamentos",
+                        "Java do zero com sintaxe, orientação a objetos, collections, exceções, lambdas, streams e projeto prático.",
+                        module(
+                                1,
+                                "Fundamentos da Linguagem",
+                                "Primeiros passos com Java moderno e lógica de programação.",
+                                lesson(1, "java-primeiros-passos", "Java 21 — Primeiros Passos", "JDK, estrutura de um programa, variáveis, tipos e operadores.", 10),
+                                lesson(2, "controle-fluxo-metodos", "Controle de Fluxo e Métodos", "Condições, loops, métodos, parâmetros e retorno.", 15)
+                        ),
+                        module(
+                                2,
+                                "Orientação a Objetos",
+                                "Modelagem de software com os fundamentos de OOP.",
+                                lesson(1, "classes-objetos", "Classes, Objetos e Encapsulamento", "Atributos, construtores, métodos e modificadores de acesso.", 20),
+                                lesson(2, "heranca-polimorfismo", "Herança, Interfaces e Polimorfismo", "Reuso, abstração, contratos e comportamento polimórfico.", 20)
+                        ),
+                        module(
+                                3,
+                                "Java Essencial",
+                                "Estruturas e tratamento seguro de dados.",
+                                lesson(1, "collections-java", "Collections", "List, Set, Map, generics e escolha da estrutura adequada.", 20),
+                                lesson(2, "exceptions-optional", "Exceptions e Optional", "Tratamento de erros, exceções customizadas e ausência de valores.", 20)
+                        ),
+                        module(
+                                4,
+                                "Java Moderno e Projeto",
+                                "Programação funcional, qualidade e aplicação prática.",
+                                lesson(1, "lambdas-streams", "Lambdas e Streams", "Filter, map, reduce, method references e processamento declarativo.", 25),
+                                lesson(2, "projeto-java-console", "Projeto Final em Java", "Aplicação orientada a objetos com collections, testes e organização em camadas simples.", 30)
+                        )
+                ),
+                template(
                         "python",
                         "Programação",
                         "Python",
