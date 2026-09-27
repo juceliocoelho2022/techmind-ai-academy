@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.net.URI;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -52,17 +55,24 @@ public class MercadoPagoGateway {
         return !webhookSecret.isBlank();
     }
 
+    public boolean hasValidReturnUrl() {
+        return isPublicHttpsUrl(publicUrl);
+    }
+
     public ProviderCheckoutSession createPreference(PaymentOrder order) {
         requireConfigured();
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("external_reference", order.getExternalReference());
-        body.put("auto_return", "approved");
-        body.put("back_urls", Map.of(
-                "success", publicUrl + "/?payment_result=success",
-                "pending", publicUrl + "/?payment_result=pending",
-                "failure", publicUrl + "/?payment_result=failure"
-        ));
+
+        if (hasValidReturnUrl()) {
+            body.put("auto_return", "approved");
+            body.put("back_urls", Map.of(
+                    "success", publicUrl + "/?payment_result=success",
+                    "pending", publicUrl + "/?payment_result=pending",
+                    "failure", publicUrl + "/?payment_result=failure"
+            ));
+        }
         body.put("payer", Map.of("email", order.getUser().getEmail()));
         body.put("items", List.of(Map.of(
                 "id", order.getPlanCode().name() + "-" + order.getBillingPeriod().name(),
@@ -121,6 +131,15 @@ public class MercadoPagoGateway {
             );
         } catch (ResponseStatusException exception) {
             throw exception;
+        } catch (RestClientResponseException exception) {
+            throw new ResponseStatusException(
+                    BAD_GATEWAY,
+                    "Mercado Pago rejeitou o checkout (HTTP "
+                            + exception.getStatusCode().value()
+                            + "): "
+                            + providerErrorDetail(exception.getResponseBodyAsString()),
+                    exception
+            );
         } catch (Exception exception) {
             throw new ResponseStatusException(
                     BAD_GATEWAY,
@@ -210,6 +229,60 @@ public class MercadoPagoGateway {
                     SERVICE_UNAVAILABLE,
                     "Mercado Pago ainda não está configurado no servidor"
             );
+        }
+    }
+
+    private String providerErrorDetail(String rawBody) {
+        if (rawBody == null || rawBody.isBlank()) {
+            return "resposta sem detalhes";
+        }
+
+        try {
+            JsonNode body = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readTree(rawBody);
+
+            String message = body.path("message").asText();
+            if (!message.isBlank()) return message;
+
+            String error = body.path("error").asText();
+            if (!error.isBlank()) return error;
+
+            JsonNode causes = body.path("cause");
+            if (causes.isArray() && !causes.isEmpty()) {
+                String description = causes.get(0).path("description").asText();
+                if (!description.isBlank()) return description;
+
+                String code = causes.get(0).path("code").asText();
+                if (!code.isBlank()) return code;
+            }
+        } catch (Exception ignored) {
+            // Usa fallback sanitizado abaixo.
+        }
+
+        return rawBody.length() > 240
+                ? rawBody.substring(0, 240)
+                : rawBody;
+    }
+
+    private boolean isPublicHttpsUrl(String value) {
+        if (value == null || value.isBlank()) return false;
+
+        try {
+            URI uri = URI.create(value.trim());
+            String scheme = uri.getScheme();
+            String host = uri.getHost();
+
+            if (!"https".equalsIgnoreCase(scheme) || host == null || host.isBlank()) {
+                return false;
+            }
+
+            String normalizedHost = host.toLowerCase(Locale.ROOT);
+
+            return !normalizedHost.equals("localhost")
+                    && !normalizedHost.equals("127.0.0.1")
+                    && !normalizedHost.equals("::1");
+        } catch (IllegalArgumentException exception) {
+            return false;
         }
     }
 
