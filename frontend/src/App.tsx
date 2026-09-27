@@ -1136,9 +1136,11 @@ export default function App() {
                     <div>
                       <LockKeyhole size={24} />
                       <div>
-                        <strong>Conteúdo ${selectedCourse.requiredPlan}</strong>
+                        <strong>
+                          Conteúdo {selectedCourse.requiredPlan}
+                        </strong>
                         <span>
-                          Seu plano atual é ${subscription?.plan ?? 'FREE'}.
+                          Seu plano atual é {subscription?.plan ?? 'FREE'}.
                           Faça upgrade para matricular-se, baixar materiais,
                           concluir aulas e responder aos quizzes.
                         </span>
