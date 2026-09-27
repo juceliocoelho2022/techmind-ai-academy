@@ -1,5 +1,6 @@
 package br.com.techmind.academy.user;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,13 +14,16 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final AdminAuditService auditService;
 
     public AdminUserService(
             UserRepository userRepository,
-            EnrollmentRepository enrollmentRepository
+            EnrollmentRepository enrollmentRepository,
+            AdminAuditService auditService
     ) {
         this.userRepository = userRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -64,8 +68,17 @@ public class AdminUserService {
             );
         }
 
+        var previousRole = target.getRole();
         target.setRole(request.role());
         var saved = userRepository.save(target);
+
+        auditService.record(
+                currentEmail,
+                "ROLE_CHANGE",
+                "USER",
+                saved.getId(),
+                "Papel alterado de " + previousRole.name() + " para " + saved.getRole().name() + " em " + saved.getEmail()
+        );
 
         return toResponse(saved, currentEmail);
     }
