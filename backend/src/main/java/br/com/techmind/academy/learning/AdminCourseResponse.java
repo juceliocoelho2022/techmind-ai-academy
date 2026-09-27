@@ -2,6 +2,7 @@ package br.com.techmind.academy.learning;
 
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseLevel;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
 
 public record AdminCourseResponse(
         Long id,
@@ -11,6 +12,7 @@ public record AdminCourseResponse(
         String category,
         String technology,
         CourseLevel level,
+        SubscriptionPlan requiredPlan,
         int totalLessons
 ) {
     static AdminCourseResponse from(Course course) {
@@ -22,6 +24,7 @@ public record AdminCourseResponse(
                 course.getCategory(),
                 course.getTechnology(),
                 course.getLevel(),
+                course.getRequiredPlan(),
                 course.getTotalLessons()
         );
     }
