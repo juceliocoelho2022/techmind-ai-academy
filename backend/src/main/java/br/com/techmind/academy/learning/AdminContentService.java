@@ -3,6 +3,8 @@ package br.com.techmind.academy.learning;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.course.CourseRepository;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
+import br.com.techmind.academy.quiz.LessonQuizRepository;
+import br.com.techmind.academy.quiz.QuizAttemptRepository;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,8 @@ public class AdminContentService {
     private final LessonResourceRepository resourceRepository;
     private final LessonResourceStorageService storageService;
     private final EnrollmentRepository enrollmentRepository;
+    private final LessonQuizRepository quizRepository;
+    private final QuizAttemptRepository quizAttemptRepository;
     private final UserRepository userRepository;
 
     public AdminContentService(
@@ -30,6 +34,8 @@ public class AdminContentService {
             LessonResourceRepository resourceRepository,
             LessonResourceStorageService storageService,
             EnrollmentRepository enrollmentRepository,
+            LessonQuizRepository quizRepository,
+            QuizAttemptRepository quizAttemptRepository,
             UserRepository userRepository
     ) {
         this.courseRepository = courseRepository;
@@ -39,6 +45,8 @@ public class AdminContentService {
         this.resourceRepository = resourceRepository;
         this.storageService = storageService;
         this.enrollmentRepository = enrollmentRepository;
+        this.quizRepository = quizRepository;
+        this.quizAttemptRepository = quizAttemptRepository;
         this.userRepository = userRepository;
     }
 
@@ -95,7 +103,7 @@ public class AdminContentService {
         }
 
         var lessons = lessonRepository.findCurriculumByCourseId(courseId);
-        ensureLessonsWithoutProgress(lessons);
+        ensureLessonsWithoutActivity(lessons);
         lessons.forEach(this::deleteLessonResources);
 
         courseRepository.delete(course);
@@ -145,7 +153,7 @@ public class AdminContentService {
         var module = findModule(moduleId);
         var lessons = lessonRepository.findByModuleIdOrderByPositionAsc(moduleId);
 
-        ensureLessonsWithoutProgress(lessons);
+        ensureLessonsWithoutActivity(lessons);
         lessons.forEach(this::deleteLessonResources);
 
         moduleRepository.delete(module);
@@ -202,10 +210,10 @@ public class AdminContentService {
         requireAdmin(email);
 
         var lesson = findLesson(lessonId);
-        if (lessonProgressRepository.existsByLessonId(lessonId)) {
+        if (hasStudentActivity(lesson)) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "A aula possui progresso de alunos e não pode ser excluída"
+                    "A aula possui progresso ou tentativas de quiz e não pode ser excluída"
             );
         }
 
@@ -213,16 +221,25 @@ public class AdminContentService {
         lessonRepository.delete(lesson);
     }
 
-    private void ensureLessonsWithoutProgress(java.util.List<Lesson> lessons) {
-        boolean hasProgress = lessons.stream()
-                .anyMatch(lesson -> lessonProgressRepository.existsByLessonId(lesson.getId()));
+    private void ensureLessonsWithoutActivity(java.util.List<Lesson> lessons) {
+        boolean hasActivity = lessons.stream().anyMatch(this::hasStudentActivity);
 
-        if (hasProgress) {
+        if (hasActivity) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Existem aulas com progresso de alunos. Edite o conteúdo em vez de excluí-lo"
+                    "Existem aulas com progresso ou tentativas de quiz. Edite o conteúdo em vez de excluí-lo"
             );
         }
+    }
+
+    private boolean hasStudentActivity(Lesson lesson) {
+        if (lessonProgressRepository.existsByLessonId(lesson.getId())) {
+            return true;
+        }
+
+        return quizRepository.findByLessonId(lesson.getId())
+                .map(quiz -> quizAttemptRepository.existsByQuizId(quiz.getId()))
+                .orElse(false);
     }
 
     private void deleteLessonResources(Lesson lesson) {

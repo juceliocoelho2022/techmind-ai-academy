@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import AdminStudio from './AdminStudio'
+import LessonQuizPanel from './LessonQuizPanel'
 import {
   ArrowLeft,
   BookOpen,
@@ -934,6 +935,15 @@ export default function App() {
                                       )
                                     })}
                                   </div>
+                                )}
+
+                                {user && token && (
+                                  <LessonQuizPanel
+                                    token={token}
+                                    lessonId={lesson.id}
+                                    enrolled={Boolean(selectedEnrollment)}
+                                    onXpChanged={() => refreshStudentData(token)}
+                                  />
                                 )}
 
                                 {user?.role === 'ADMIN' && (
