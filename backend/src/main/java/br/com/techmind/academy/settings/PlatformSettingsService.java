@@ -1,5 +1,6 @@
 package br.com.techmind.academy.settings;
 
+import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.user.UserRepository;
 import br.com.techmind.academy.user.UserRole;
 import org.springframework.http.HttpStatus;
@@ -13,13 +14,16 @@ public class PlatformSettingsService {
     private static final short SETTINGS_ID = 1;
 
     private final PlatformSettingsRepository repository;
+    private final AdminAuditService auditService;
     private final UserRepository userRepository;
 
     public PlatformSettingsService(
             PlatformSettingsRepository repository,
+            AdminAuditService auditService,
             UserRepository userRepository
     ) {
         this.repository = repository;
+        this.auditService = auditService;
         this.userRepository = userRepository;
     }
 
@@ -50,7 +54,15 @@ public class PlatformSettingsService {
         settings.setDefaultQuizPassingScore(request.defaultQuizPassingScore());
         settings.setDefaultQuizXp(request.defaultQuizXp());
 
-        return AdminPlatformSettingsResponse.from(repository.save(settings));
+        var saved = repository.save(settings);
+        auditService.record(
+                email,
+                "SETTINGS_UPDATE",
+                "PLATFORM_SETTINGS",
+                SETTINGS_ID,
+                "Configurações da plataforma atualizadas"
+        );
+        return AdminPlatformSettingsResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
