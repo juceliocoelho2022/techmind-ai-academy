@@ -35,6 +35,7 @@ class PaymentServiceTest {
                 .build();
 
         when(gateway.isConfigured()).thenReturn(true);
+        when(gateway.hasValidReturnUrl()).thenReturn(true);
         when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Optional.of(user));
         when(subscriptionService.currentPlanForUser(user.getId()))
