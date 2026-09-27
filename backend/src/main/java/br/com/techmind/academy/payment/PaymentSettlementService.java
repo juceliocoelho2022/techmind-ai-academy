@@ -42,15 +42,11 @@ public class PaymentSettlementService {
 
         validateOrder(order, payment);
 
-        if (order.getProviderPaymentId() == null) {
-            order.setProviderPaymentId(payment.paymentId());
-        } else if (!order.getProviderPaymentId().equals(payment.paymentId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "A ordem já está vinculada a outro pagamento"
-            );
+        if (order.getStatus() == PaymentOrderStatus.PAID) {
+            return order;
         }
 
+        order.setProviderPaymentId(payment.paymentId());
         order.setProviderStatus(payment.status());
 
         String status = payment.status() == null
