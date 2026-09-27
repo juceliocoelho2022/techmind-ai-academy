@@ -47,6 +47,28 @@ class MercadoPagoGatewayTest {
         ).isFalse();
     }
 
+    @Test
+    void shouldRejectLocalHttpReturnUrlAndAcceptPublicHttps() {
+        var local = new MercadoPagoGateway(
+                "TEST-access-token",
+                "",
+                "http://localhost:3000",
+                "",
+                true
+        );
+
+        var publicHttps = new MercadoPagoGateway(
+                "TEST-access-token",
+                "",
+                "https://academy.example.com",
+                "",
+                true
+        );
+
+        assertThat(local.hasValidReturnUrl()).isFalse();
+        assertThat(publicHttps.hasValidReturnUrl()).isTrue();
+    }
+
     private String hmac(String secret, String value) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(new SecretKeySpec(
