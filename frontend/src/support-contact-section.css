@@ -1,0 +1,128 @@
+.support-contact-section {
+  margin: 28px 0 0;
+  padding: 24px;
+  border: 1px solid #23435d;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(49, 202, 159, .10), transparent 38%),
+    linear-gradient(135deg, rgba(13, 39, 58, .96), rgba(9, 22, 37, .96));
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  align-items: center;
+  gap: 24px;
+}
+
+.support-contact-copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.support-contact-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid #326a83;
+  border-radius: 16px;
+  background: #0d3046;
+  color: #6de2fa;
+}
+
+.support-contact-copy h3 {
+  margin: 5px 0 7px;
+  font-size: 25px;
+}
+
+.support-contact-copy p {
+  margin: 0;
+  max-width: 610px;
+  color: #8fa4b8;
+  line-height: 1.55;
+  font-size: 13px;
+}
+
+.support-contact-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.support-contact-card {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 14px;
+  border: 1px solid #2c5570;
+  border-radius: 13px;
+  background: #091d2d;
+  color: #dff7ff;
+  text-decoration: none;
+  transition: .18s ease;
+}
+
+.support-contact-card:hover {
+  transform: translateY(-2px);
+  border-color: #5ed8f5;
+  background: #0d293d;
+}
+
+.support-contact-card > svg {
+  flex: 0 0 auto;
+  color: #65dcf7;
+}
+
+.support-contact-card.whatsapp {
+  border-color: #2d6555;
+  background: #0b2822;
+}
+
+.support-contact-card.whatsapp:hover {
+  border-color: #55d5a8;
+  background: #0f352c;
+}
+
+.support-contact-card.whatsapp > svg {
+  color: #75e3b8;
+}
+
+.support-contact-card div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.support-contact-card span {
+  color: #7893a7;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.support-contact-card strong {
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+@media (max-width: 820px) {
+  .support-contact-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .support-contact-section {
+    padding: 18px;
+  }
+
+  .support-contact-copy {
+    flex-direction: column;
+  }
+
+  .support-contact-copy h3 {
+    font-size: 22px;
+  }
+}
