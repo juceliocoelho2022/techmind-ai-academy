@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface LessonQuizRepository extends JpaRepository<LessonQuiz, Long> {
 
-    @EntityGraph(attributePaths = {"lesson", "lesson.module", "lesson.module.course", "questions", "questions.options"})
+    @EntityGraph(attributePaths = {"lesson", "lesson.module", "lesson.module.course", "questions"})
     Optional<LessonQuiz> findByLessonId(Long lessonId);
 }
