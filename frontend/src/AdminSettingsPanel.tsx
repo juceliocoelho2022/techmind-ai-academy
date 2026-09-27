@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import {
   BookOpenCheck,
   Mail,
+  MessageCircle,
   Save,
   Settings2,
   ShieldCheck,
@@ -14,6 +15,7 @@ export type PlatformSettings = {
   academyName: string
   tagline: string
   supportEmail: string | null
+  whatsappNumber: string | null
   registrationEnabled: boolean
   defaultLessonXp: number
   defaultQuizPassingScore: number
@@ -105,6 +107,7 @@ export default function AdminSettingsPanel({
             academyName: settings.academyName,
             tagline: settings.tagline,
             supportEmail: settings.supportEmail || null,
+            whatsappNumber: settings.whatsappNumber || null,
             registrationEnabled: settings.registrationEnabled,
             defaultLessonXp: settings.defaultLessonXp,
             defaultQuizPassingScore: settings.defaultQuizPassingScore,
@@ -189,6 +192,29 @@ export default function AdminSettingsPanel({
                           ? {
                               ...current,
                               supportEmail: event.target.value || null
+                            }
+                          : current
+                      )
+                    }
+                  />
+                </div>
+              </label>
+
+              <label>
+                <span>WhatsApp de suporte</span>
+                <div className="settings-input-with-icon">
+                  <MessageCircle size={16} />
+                  <input
+                    type="tel"
+                    value={settings.whatsappNumber ?? ''}
+                    maxLength={30}
+                    placeholder="+5511911625945"
+                    onChange={event =>
+                      setSettings(current =>
+                        current
+                          ? {
+                              ...current,
+                              whatsappNumber: event.target.value || null
                             }
                           : current
                       )
