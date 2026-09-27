@@ -42,6 +42,7 @@ public class SubscriptionService {
                                         .planCode(SubscriptionPlan.FREE)
                                         .status(SubscriptionStatus.ACTIVE)
                                         .source(SubscriptionSource.FREE)
+                                        .billingPeriod(null)
                                         .build()
                         )
                 );
@@ -142,6 +143,8 @@ public class SubscriptionService {
         subscription.setPlanCode(request.getRequestedPlan());
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setSource(SubscriptionSource.MANUAL);
+        subscription.setBillingPeriod(request.getBillingPeriod());
+        subscription.setCanceledAt(null);
         subscription.setStartedAt(now);
         subscription.setEndsAt(
                 request.getBillingPeriod() == BillingPeriod.ANNUAL
@@ -193,6 +196,51 @@ public class SubscriptionService {
         return toAdminResponse(saved);
     }
 
+    @Transactional
+    public MySubscriptionResponse cancelCurrent(
+            String email,
+            CancelSubscriptionRequest request
+    ) {
+        var user = findUser(email);
+        var subscription = ensureFreeSubscription(user);
+        expirePaidSubscriptionIfNeeded(subscription);
+
+        if (subscription.getStatus() != SubscriptionStatus.ACTIVE
+                || currentPlanForUser(user.getId()) == SubscriptionPlan.FREE) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Não existe assinatura premium ativa para cancelar"
+            );
+        }
+
+        var now = OffsetDateTime.now();
+        subscription.setStatus(SubscriptionStatus.CANCELED);
+        subscription.setCanceledAt(now);
+        subscriptionRepository.save(subscription);
+
+        upgradeRequestRepository
+                .findFirstByUserIdAndStatusOrderByCreatedAtDesc(
+                        user.getId(),
+                        UpgradeRequestStatus.PENDING
+                )
+                .ifPresent(pending -> {
+                    pending.setStatus(UpgradeRequestStatus.REJECTED);
+                    pending.setResolvedAt(now);
+                    pending.setResolvedByEmail("user:self-service");
+                    upgradeRequestRepository.save(pending);
+                });
+
+        auditService.record(
+                email,
+                "SUBSCRIPTION_CANCELED_BY_USER",
+                "USER_SUBSCRIPTION",
+                subscription.getId(),
+                "Usuário encerrou o acesso premium imediatamente"
+        );
+
+        return toMyResponse(subscription, null);
+    }
+
     @Transactional(readOnly = true)
     public SubscriptionPlan currentPlanForUser(Long userId) {
         return subscriptionRepository.findByUserId(userId)
@@ -242,6 +290,8 @@ public class SubscriptionService {
             subscription.setPlanCode(purchasedPlan);
             subscription.setStatus(SubscriptionStatus.ACTIVE);
             subscription.setSource(SubscriptionSource.PAYMENT);
+            subscription.setBillingPeriod(billingPeriod);
+            subscription.setCanceledAt(null);
             subscription.setStartedAt(now);
             subscription.setEndsAt(
                     billingPeriod == BillingPeriod.ANNUAL
@@ -307,8 +357,10 @@ public class SubscriptionService {
                 subscription.getPlanCode(),
                 subscription.getStatus(),
                 subscription.getSource(),
+                subscription.getBillingPeriod(),
                 subscription.getStartedAt(),
                 subscription.getEndsAt(),
+                subscription.getCanceledAt(),
                 pendingResponse
         );
     }
