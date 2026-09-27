@@ -4,6 +4,8 @@ import br.com.techmind.academy.audit.AdminAuditService;
 import br.com.techmind.academy.course.Course;
 import br.com.techmind.academy.enrollment.Enrollment;
 import br.com.techmind.academy.enrollment.EnrollmentRepository;
+import br.com.techmind.academy.subscription.SubscriptionPlan;
+import br.com.techmind.academy.subscription.SubscriptionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +23,7 @@ class AdminUserServiceTest {
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var auditService = mock(AdminAuditService.class);
+        var subscriptionService = mock(SubscriptionService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -62,8 +65,10 @@ class AdminUserServiceTest {
                 .thenReturn(List.of(enrollment));
         when(enrollmentRepository.findByUserIdOrderByStartedAtDesc(1L))
                 .thenReturn(List.of());
+        when(subscriptionService.currentPlanForUser(1L)).thenReturn(SubscriptionPlan.CAREER);
+        when(subscriptionService.currentPlanForUser(2L)).thenReturn(SubscriptionPlan.FREE);
 
-        var service = new AdminUserService(userRepository, enrollmentRepository, auditService);
+        var service = new AdminUserService(userRepository, enrollmentRepository, subscriptionService, auditService);
 
         var users = service.list("admin@techmind.dev");
 
@@ -71,6 +76,7 @@ class AdminUserServiceTest {
 
         var studentResponse = users.get(0);
         assertThat(studentResponse.email()).isEqualTo("aluno@techmind.dev");
+        assertThat(studentResponse.plan()).isEqualTo("FREE");
         assertThat(studentResponse.enrollments()).isEqualTo(1);
         assertThat(studentResponse.completedLessons()).isEqualTo(4);
         assertThat(studentResponse.xp()).isEqualTo(90);
@@ -78,6 +84,7 @@ class AdminUserServiceTest {
 
         var adminResponse = users.get(1);
         assertThat(adminResponse.currentUser()).isTrue();
+        assertThat(adminResponse.plan()).isEqualTo("CAREER");
         assertThat(adminResponse.role()).isEqualTo("ADMIN");
     }
 
@@ -86,6 +93,7 @@ class AdminUserServiceTest {
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var auditService = mock(AdminAuditService.class);
+        var subscriptionService = mock(SubscriptionService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -111,8 +119,9 @@ class AdminUserServiceTest {
                 .thenReturn(student);
         when(enrollmentRepository.findByUserIdOrderByStartedAtDesc(2L))
                 .thenReturn(List.of());
+        when(subscriptionService.currentPlanForUser(2L)).thenReturn(SubscriptionPlan.FREE);
 
-        var service = new AdminUserService(userRepository, enrollmentRepository, auditService);
+        var service = new AdminUserService(userRepository, enrollmentRepository, subscriptionService, auditService);
 
         var response = service.updateRole(
                 "admin@techmind.dev",
@@ -137,6 +146,7 @@ class AdminUserServiceTest {
         var userRepository = mock(UserRepository.class);
         var enrollmentRepository = mock(EnrollmentRepository.class);
         var auditService = mock(AdminAuditService.class);
+        var subscriptionService = mock(SubscriptionService.class);
 
         var admin = User.builder()
                 .id(1L)
@@ -151,7 +161,7 @@ class AdminUserServiceTest {
         when(userRepository.findById(1L))
                 .thenReturn(Optional.of(admin));
 
-        var service = new AdminUserService(userRepository, enrollmentRepository, auditService);
+        var service = new AdminUserService(userRepository, enrollmentRepository, subscriptionService, auditService);
 
         assertThatThrownBy(() ->
                 service.updateRole(
