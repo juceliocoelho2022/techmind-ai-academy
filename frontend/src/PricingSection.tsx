@@ -292,8 +292,9 @@ export default function PricingSection({
 
       <p className="pricing-note">
         Planos pagos usam checkout externo do Mercado Pago quando o gateway
-        está configurado. A ativação só ocorre após confirmação do pagamento;
-        em desenvolvimento sem gateway, permanece disponível o fluxo manual.
+        está configurado. A ativação só ocorre após confirmação do pagamento.
+        Nesta versão, mensal e anual liberam acesso pelo período comprado; a
+        renovação automática será adicionada em uma etapa própria.
       </p>
     </section>
   )
