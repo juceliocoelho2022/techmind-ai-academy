@@ -52,23 +52,37 @@ Nunca coloque `MERCADO_PAGO_ACCESS_TOKEN` ou `MERCADO_PAGO_WEBHOOK_SECRET` no Re
 
 ## Teste local
 
-O retorno do Checkout Pro inclui `payment_id`. Por isso, mesmo sem uma URL pública de webhook, a aplicação consegue reconciliar o retorno local:
+O Mercado Pago não aceita `localhost`, `127.0.0.1` ou URLs HTTP em `back_urls`.
 
-```text
-Mercado Pago
-    ↓
-http://localhost:3000/?payment_result=success&payment_id=...
-    ↓
-POST /api/v1/payments/reconcile/{paymentId}
-    ↓
-GET Mercado Pago /v1/payments/{id}
-    ↓
-validação server-side
-    ↓
-assinatura ativada
+Por isso, com:
+
+```env
+APP_PUBLIC_URL=http://localhost:3000
 ```
 
-Se o Mercado Pago não estiver configurado, a UI preserva o fluxo manual de upgrade como contingência.
+a TechMind não tenta abrir Checkout Pro automático. O frontend cai no fluxo manual de upgrade já existente:
+
+```text
+Aluno escolhe PRO/CAREER
+    ↓
+backend detecta localhost
+    ↓
+HTTP 503 controlado
+    ↓
+frontend cria upgrade PENDING
+    ↓
+Admin Studio
+    ↓
+Aprovar / Rejeitar
+```
+
+Para testar o Checkout Pro real, use uma URL pública HTTPS para o frontend, por exemplo por meio de um ambiente de desenvolvimento publicado ou túnel HTTPS, e configure:
+
+```env
+APP_PUBLIC_URL=https://seu-endereco-publico.example
+```
+
+Quando existe uma URL HTTPS pública válida, o retorno do Checkout Pro inclui `payment_id`, e a TechMind reconcilia o pagamento server-side antes de ativar o plano.
 
 ## Webhook de produção
 
